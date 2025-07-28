@@ -13,7 +13,8 @@ import Loans from "./pages/Loans";
 import Goals from "./pages/Goals";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
-import Auth from "./pages/Auth";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
 import { setupStatusBar, isMobile } from "./utils/mobile";
 
@@ -35,7 +36,8 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/auth" element={<Auth />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
             <Route path="/" element={<Layout />}>
               <Route index element={<Dashboard />} />
               <Route path="transactions" element={<Transactions />} />

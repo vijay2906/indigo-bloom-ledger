@@ -1,95 +1,196 @@
-import { Search, Filter, Plus, TrendingUp, TrendingDown } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import transactionsIcon from "@/assets/transactions-icon.jpg";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { useTransactions, useCreateTransaction } from "@/hooks/useTransactions";
+import { useAccounts, useCreateAccount } from "@/hooks/useAccounts";
+import { useCategories } from "@/hooks/useCategories";
+import { Plus, Loader2, Search, Filter } from "lucide-react";
+import { format } from "date-fns";
 
-const transactions = [
-  { id: 1, description: "Salary Deposit", amount: 5400, type: "income", date: "2024-11-01", category: "Salary" },
-  { id: 2, description: "Grocery Store", amount: -120, type: "expense", date: "2024-11-02", category: "Food" },
-  { id: 3, description: "Gas Station", amount: -65, type: "expense", date: "2024-11-03", category: "Transportation" },
-  { id: 4, description: "Coffee Shop", amount: -12, type: "expense", date: "2024-11-04", category: "Entertainment" },
-  { id: 5, description: "Freelance Payment", amount: 800, type: "income", date: "2024-11-05", category: "Freelance" },
-];
+const Transactions = () => {
+  const [showTransactionForm, setShowTransactionForm] = useState(false);
+  const [showAccountForm, setShowAccountForm] = useState(false);
 
-export default function Transactions() {
+  const { data: transactions, isLoading } = useTransactions();
+  const { data: accounts } = useAccounts();
+  const { data: categories } = useCategories();
+  
+  const createTransaction = useCreateTransaction();
+  const createAccount = useCreateAccount();
+
+  const [transactionForm, setTransactionForm] = useState({
+    account_id: '',
+    category_id: '',
+    amount: '',
+    description: '',
+    date: new Date().toISOString().split('T')[0],
+    type: 'expense' as 'income' | 'expense',
+  });
+
+  const handleTransactionSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createTransaction.mutate({
+      ...transactionForm,
+      amount: parseFloat(transactionForm.amount),
+    }, {
+      onSuccess: () => {
+        setTransactionForm({
+          account_id: '',
+          category_id: '',
+          amount: '',
+          description: '',
+          date: new Date().toISOString().split('T')[0],
+          type: 'expense',
+        });
+        setShowTransactionForm(false);
+      },
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Transactions</h1>
-          <p className="text-muted-foreground mt-1">
-            Track and manage all your financial transactions.
+          <h1 className="text-3xl font-bold gradient-primary bg-clip-text text-transparent">
+            Transactions
+          </h1>
+          <p className="text-muted-foreground">
+            Track your income and expenses
           </p>
         </div>
-        <Button className="gradient-primary">
+        <Button onClick={() => setShowTransactionForm(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Add Transaction
         </Button>
       </div>
 
-      {/* Module illustration */}
-      <div className="finance-card p-8 text-center">
-        <img 
-          src={transactionsIcon} 
-          alt="Transactions" 
-          className="w-32 h-24 mx-auto rounded-lg object-cover mb-4"
-        />
-        <h3 className="text-lg font-semibold text-foreground">Transaction Management</h3>
-        <p className="text-muted-foreground mt-2">
-          Keep track of all your income and expenses in one place.
-        </p>
-      </div>
+      {/* Add Transaction Form */}
+      {showTransactionForm && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Add New Transaction</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleTransactionSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Type</Label>
+                  <Select
+                    value={transactionForm.type}
+                    onValueChange={(value: any) => setTransactionForm({ ...transactionForm, type: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="income">Income</SelectItem>
+                      <SelectItem value="expense">Expense</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Amount</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={transactionForm.amount}
+                    onChange={(e) => setTransactionForm({ ...transactionForm, amount: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Description</Label>
+                <Input
+                  value={transactionForm.description}
+                  onChange={(e) => setTransactionForm({ ...transactionForm, description: e.target.value })}
+                  placeholder="e.g., Grocery shopping"
+                  required
+                />
+              </div>
 
-      {/* Filters */}
-      <div className="finance-card p-6">
-        <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1 relative">
-          <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-          <Input 
-            placeholder="Search transactions..." 
-            className="w-full pl-10"
-          />
-        </div>
-          <Button variant="outline">
-            <Filter className="h-4 w-4 mr-2" />
-            Filter
-          </Button>
-        </div>
-      </div>
+              <div className="flex gap-2">
+                <Button type="submit" disabled={createTransaction.isPending}>
+                  {createTransaction.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Plus className="h-4 w-4 mr-2" />
+                  )}
+                  Add Transaction
+                </Button>
+                <Button type="button" variant="outline" onClick={() => setShowTransactionForm(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Transactions List */}
-      <div className="finance-card p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Recent Transactions</h3>
-        <div className="space-y-4">
-          {transactions.map((transaction) => (
-            <div key={transaction.id} className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                  transaction.type === 'income' ? 'bg-success/10' : 'bg-destructive/10'
-                }`}>
-                  {transaction.type === 'income' ? (
-                    <TrendingUp className="h-5 w-5 text-success" />
-                  ) : (
-                    <TrendingDown className="h-5 w-5 text-destructive" />
-                  )}
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Transactions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {transactions && transactions.length > 0 ? (
+              transactions.map((transaction) => (
+                <div key={transaction.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center space-x-4">
+                    <div 
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-white font-medium"
+                      style={{ backgroundColor: transaction.category?.color || '#8884d8' }}
+                    >
+                      {transaction.category?.name?.charAt(0) || 'T'}
+                    </div>
+                    <div>
+                      <p className="font-medium">{transaction.description}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {transaction.category?.name} • {format(new Date(transaction.date), 'MMM dd, yyyy')}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className={`font-semibold ${
+                      transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {transaction.type === 'income' ? '+' : '-'}${Math.abs(Number(transaction.amount)).toLocaleString()}
+                    </p>
+                    <Badge variant="secondary" className="text-xs">
+                      {transaction.type}
+                    </Badge>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium text-foreground">{transaction.description}</p>
-                  <p className="text-sm text-muted-foreground">{transaction.category} • {transaction.date}</p>
-                </div>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground mb-4">No transactions yet</p>
+                <Button onClick={() => setShowTransactionForm(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Your First Transaction
+                </Button>
               </div>
-              <div className="text-right">
-                <p className={`font-semibold ${
-                  transaction.type === 'income' ? 'metric-positive' : 'metric-negative'
-                }`}>
-                  {transaction.type === 'income' ? '+' : ''}${Math.abs(transaction.amount).toLocaleString()}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
-}
+};
+
+export default Transactions;

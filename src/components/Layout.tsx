@@ -36,13 +36,13 @@ export function Layout() {
 
   useEffect(() => {
     if (!loading && !session) {
-      navigate('/auth');
+      navigate('/login');
     }
   }, [session, loading, navigate]);
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/auth');
+    navigate('/login');
   };
 
   if (loading) {
