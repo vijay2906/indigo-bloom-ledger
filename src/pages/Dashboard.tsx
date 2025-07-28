@@ -2,6 +2,9 @@ import { DollarSign, TrendingUp, TrendingDown, Calendar, CreditCard, Target } fr
 import { MetricCard } from "@/components/MetricCard";
 import { CustomPieChart } from "@/components/charts/PieChart";
 import { CustomBarChart } from "@/components/charts/BarChart";
+import { TransactionForm } from "@/components/mobile/TransactionForm";
+import { isMobile, hapticFeedback } from "@/utils/mobile";
+import { useToast } from "@/hooks/use-toast";
 
 // Sample data for demo
 const expenseData = [
@@ -29,6 +32,14 @@ const upcomingPayments = [
 ];
 
 export default function Dashboard() {
+  const { toast } = useToast();
+
+  const handleTransactionSubmit = (transaction: any) => {
+    // In a real app, this would save to your database
+    console.log('New transaction:', transaction);
+    // Here you would typically call an API or update local storage
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -109,25 +120,16 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Quick Actions */}
+      {/* Quick Actions - Enhanced for Mobile */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <button className="finance-card p-4 hover:bg-accent transition-colors text-left">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-success/10 rounded-lg flex items-center justify-center">
-              <TrendingUp className="h-4 w-4 text-success" />
-            </div>
-            <span className="font-medium text-foreground">Add Income</span>
-          </div>
-        </button>
-        <button className="finance-card p-4 hover:bg-accent transition-colors text-left">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-destructive/10 rounded-lg flex items-center justify-center">
-              <TrendingDown className="h-4 w-4 text-destructive" />
-            </div>
-            <span className="font-medium text-foreground">Add Expense</span>
-          </div>
-        </button>
-        <button className="finance-card p-4 hover:bg-accent transition-colors text-left">
+        <div className="md:col-span-2 grid grid-cols-1 gap-4">
+          <TransactionForm type="income" onSubmit={handleTransactionSubmit} />
+          <TransactionForm type="expense" onSubmit={handleTransactionSubmit} />
+        </div>
+        <button 
+          className="finance-card p-4 hover:bg-accent transition-colors text-left"
+          onClick={() => isMobile() && hapticFeedback('light')}
+        >
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
               <Target className="h-4 w-4 text-primary" />
@@ -135,7 +137,10 @@ export default function Dashboard() {
             <span className="font-medium text-foreground">Set Goal</span>
           </div>
         </button>
-        <button className="finance-card p-4 hover:bg-accent transition-colors text-left">
+        <button 
+          className="finance-card p-4 hover:bg-accent transition-colors text-left"
+          onClick={() => isMobile() && hapticFeedback('light')}
+        >
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-warning/10 rounded-lg flex items-center justify-center">
               <Calendar className="h-4 w-4 text-warning" />
