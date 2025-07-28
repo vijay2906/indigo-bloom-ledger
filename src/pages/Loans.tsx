@@ -1,147 +1,427 @@
-import { Plus, Calendar, TrendingDown } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import loansIcon from "@/assets/loans-icon.jpg";
+import { useLoans, useCreateLoan, useCreateLoanPayment } from "@/hooks/useLoans";
+import { useToast } from "@/hooks/use-toast";
+import { Plus, Loader2, Calendar, TrendingDown, DollarSign } from "lucide-react";
+import { format } from "date-fns";
 
-const loans = [
-  {
-    name: "Home Mortgage",
-    totalAmount: 350000,
-    remainingBalance: 285000,
-    monthlyPayment: 2500,
-    interestRate: 3.5,
-    nextPayment: "Dec 1, 2024",
-    term: "30 years"
-  },
-  {
-    name: "Car Loan",
-    totalAmount: 25000,
-    remainingBalance: 18500,
-    monthlyPayment: 485,
-    interestRate: 4.2,
-    nextPayment: "Dec 3, 2024",
-    term: "5 years"
-  },
-  {
-    name: "Student Loan",
-    totalAmount: 45000,
-    remainingBalance: 32000,
-    monthlyPayment: 320,
-    interestRate: 5.8,
-    nextPayment: "Dec 15, 2024",
-    term: "10 years"
+const Loans = () => {
+  const [showLoanForm, setShowLoanForm] = useState(false);
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const { toast } = useToast();
+
+  const { data: loans, isLoading } = useLoans();
+  const createLoan = useCreateLoan();
+  const createPayment = useCreateLoanPayment();
+
+  const [loanForm, setLoanForm] = useState({
+    name: '',
+    type: 'personal' as 'personal' | 'home' | 'auto' | 'student' | 'business',
+    principal_amount: '',
+    interest_rate: '',
+    tenure_months: '',
+    start_date: new Date().toISOString().split('T')[0],
+  });
+
+  const [paymentForm, setPaymentForm] = useState({
+    loan_id: '',
+    amount: '',
+    payment_date: new Date().toISOString().split('T')[0],
+  });
+
+  const handleLoanSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createLoan.mutate({
+      ...loanForm,
+      principal_amount: parseFloat(loanForm.principal_amount),
+      interest_rate: parseFloat(loanForm.interest_rate),
+      tenure_months: parseInt(loanForm.tenure_months),
+    }, {
+      onSuccess: () => {
+        setLoanForm({
+          name: '',
+          type: 'personal',
+          principal_amount: '',
+          interest_rate: '',
+          tenure_months: '',
+          start_date: new Date().toISOString().split('T')[0],
+        });
+        setShowLoanForm(false);
+      },
+    });
+  };
+
+  const handlePaymentSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!paymentForm.loan_id) {
+      toast({
+        variant: "destructive",
+        title: "Loan Required",
+        description: "Please select a loan for the payment.",
+      });
+      return;
+    }
+
+    createPayment.mutate({
+      ...paymentForm,
+      amount: parseFloat(paymentForm.amount),
+    }, {
+      onSuccess: () => {
+        setPaymentForm({
+          loan_id: '',
+          amount: '',
+          payment_date: new Date().toISOString().split('T')[0],
+        });
+        setShowPaymentForm(false);
+      },
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
-];
 
-export default function Loans() {
-  const totalOwed = loans.reduce((sum, loan) => sum + loan.remainingBalance, 0);
-  const monthlyPayments = loans.reduce((sum, loan) => sum + loan.monthlyPayment, 0);
+  const totalOwed = loans?.reduce((sum, loan) => sum + loan.remaining_balance, 0) || 0;
+  const monthlyPayments = loans?.reduce((sum, loan) => sum + loan.emi_amount, 0) || 0;
+  const nextPayment = loans?.sort((a, b) => new Date(a.next_emi_date).getTime() - new Date(b.next_emi_date).getTime())[0];
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Loans</h1>
-          <p className="text-muted-foreground mt-1">
-            Track your loans, payments, and progress toward being debt-free.
+          <h1 className="text-3xl font-bold gradient-primary bg-clip-text text-transparent">
+            Loans
+          </h1>
+          <p className="text-muted-foreground">
+            Track your loans and payments
           </p>
         </div>
-        <Button className="gradient-primary">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Loan
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => setShowPaymentForm(true)}
+            variant="outline"
+            size="sm"
+            disabled={!loans || loans.length === 0}
+          >
+            <DollarSign className="h-4 w-4 mr-2" />
+            Record Payment
+          </Button>
+          <Button onClick={() => setShowLoanForm(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Loan
+          </Button>
+        </div>
       </div>
 
-      {/* Module illustration */}
-      <div className="finance-card p-8 text-center">
-        <img 
-          src={loansIcon} 
-          alt="Loans" 
-          className="w-32 h-24 mx-auto rounded-lg object-cover mb-4"
-        />
-        <h3 className="text-lg font-semibold text-foreground">Loan Management</h3>
-        <p className="text-muted-foreground mt-2">
-          Monitor your debt and track your journey to financial freedom.
-        </p>
-      </div>
+      {/* Add Loan Form */}
+      {showLoanForm && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Add New Loan</CardTitle>
+            <CardDescription>Add a loan to track your debt and payments</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleLoanSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="loan-name">Loan Name *</Label>
+                  <Input
+                    id="loan-name"
+                    value={loanForm.name}
+                    onChange={(e) => setLoanForm({ ...loanForm, name: e.target.value })}
+                    placeholder="e.g., Home Mortgage"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="loan-type">Loan Type</Label>
+                  <Select
+                    value={loanForm.type}
+                    onValueChange={(value: any) => setLoanForm({ ...loanForm, type: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="personal">Personal</SelectItem>
+                      <SelectItem value="home">Home/Mortgage</SelectItem>
+                      <SelectItem value="auto">Auto/Car</SelectItem>
+                      <SelectItem value="student">Student</SelectItem>
+                      <SelectItem value="business">Business</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="principal">Principal Amount *</Label>
+                  <Input
+                    id="principal"
+                    type="number"
+                    step="0.01"
+                    value={loanForm.principal_amount}
+                    onChange={(e) => setLoanForm({ ...loanForm, principal_amount: e.target.value })}
+                    placeholder="0.00"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="interest">Interest Rate (%) *</Label>
+                  <Input
+                    id="interest"
+                    type="number"
+                    step="0.01"
+                    value={loanForm.interest_rate}
+                    onChange={(e) => setLoanForm({ ...loanForm, interest_rate: e.target.value })}
+                    placeholder="5.5"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tenure">Tenure (Months) *</Label>
+                  <Input
+                    id="tenure"
+                    type="number"
+                    value={loanForm.tenure_months}
+                    onChange={(e) => setLoanForm({ ...loanForm, tenure_months: e.target.value })}
+                    placeholder="360"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="start-date">Start Date</Label>
+                <Input
+                  id="start-date"
+                  type="date"
+                  value={loanForm.start_date}
+                  onChange={(e) => setLoanForm({ ...loanForm, start_date: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="flex gap-2">
+                <Button type="submit" disabled={createLoan.isPending}>
+                  {createLoan.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Plus className="h-4 w-4 mr-2" />
+                  )}
+                  Add Loan
+                </Button>
+                <Button type="button" variant="outline" onClick={() => setShowLoanForm(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Record Payment Form */}
+      {showPaymentForm && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Record Loan Payment</CardTitle>
+            <CardDescription>Record a payment for one of your loans</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handlePaymentSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Loan *</Label>
+                  <Select
+                    value={paymentForm.loan_id}
+                    onValueChange={(value) => setPaymentForm({ ...paymentForm, loan_id: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a loan" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {loans?.map((loan) => (
+                        <SelectItem key={loan.id} value={loan.id}>
+                          {loan.name} (${loan.emi_amount}/month)
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Payment Amount *</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={paymentForm.amount}
+                    onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })}
+                    placeholder="0.00"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Payment Date</Label>
+                <Input
+                  type="date"
+                  value={paymentForm.payment_date}
+                  onChange={(e) => setPaymentForm({ ...paymentForm, payment_date: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="flex gap-2">
+                <Button type="submit" disabled={createPayment.isPending}>
+                  {createPayment.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <DollarSign className="h-4 w-4 mr-2" />
+                  )}
+                  Record Payment
+                </Button>
+                <Button type="button" variant="outline" onClick={() => setShowPaymentForm(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="finance-card p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-2">Total Debt</h3>
-          <p className="text-3xl font-bold metric-negative">${totalOwed.toLocaleString()}</p>
-          <p className="text-sm text-muted-foreground mt-1">Remaining balance</p>
-        </div>
-        <div className="finance-card p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-2">Monthly Payments</h3>
-          <p className="text-3xl font-bold text-foreground">${monthlyPayments.toLocaleString()}</p>
-          <p className="text-sm text-muted-foreground mt-1">Total due each month</p>
-        </div>
-        <div className="finance-card p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-2">Next Payment</h3>
-          <p className="text-3xl font-bold text-warning">Dec 1</p>
-          <p className="text-sm text-muted-foreground mt-1">Mortgage due</p>
-        </div>
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">Total Debt</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">
+              ${totalOwed.toLocaleString()}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Remaining balance
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">Monthly Payments</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              ${monthlyPayments.toLocaleString()}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Total EMI
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">Next Payment</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-600">
+              {nextPayment ? format(new Date(nextPayment.next_emi_date), 'MMM dd') : 'None'}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {nextPayment ? nextPayment.name : 'No loans'}
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Loan Details */}
-      <div className="space-y-4">
-        {loans.map((loan, index) => (
-          <div key={index} className="finance-card p-6">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-4">
-              <div>
-                <h3 className="text-xl font-semibold text-foreground">{loan.name}</h3>
-                <p className="text-muted-foreground">{loan.interestRate}% APR • {loan.term}</p>
-              </div>
-              <div className="mt-2 lg:mt-0 text-left lg:text-right">
-                <p className="text-2xl font-bold metric-negative">
-                  ${loan.remainingBalance.toLocaleString()}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  of ${loan.totalAmount.toLocaleString()} remaining
-                </p>
-              </div>
-            </div>
+      {/* Loans List */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Your Loans</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {loans && loans.length > 0 ? (
+              loans.map((loan) => {
+                const progressPercentage = ((loan.principal_amount - loan.remaining_balance) / loan.principal_amount) * 100;
+                
+                return (
+                  <div key={loan.id} className="p-4 border rounded-lg space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-semibold text-lg">{loan.name}</h3>
+                        <p className="text-sm text-muted-foreground capitalize">
+                          {loan.type} • {loan.interest_rate}% APR • {loan.tenure_months} months
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-bold text-red-600">
+                          ${loan.remaining_balance.toLocaleString()}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          of ${loan.principal_amount.toLocaleString()} remaining
+                        </p>
+                      </div>
+                    </div>
 
-            {/* Progress bar */}
-            <div className="mb-4">
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-muted-foreground">Progress</span>
-                <span className="text-muted-foreground">
-                  {((loan.totalAmount - loan.remainingBalance) / loan.totalAmount * 100).toFixed(1)}% paid
-                </span>
-              </div>
-              <Progress 
-                value={(loan.totalAmount - loan.remainingBalance) / loan.totalAmount * 100} 
-                className="h-3"
-              />
-            </div>
+                    <div>
+                      <div className="flex justify-between text-sm mb-2">
+                        <span className="text-muted-foreground">Progress</span>
+                        <span className="text-muted-foreground">
+                          {progressPercentage.toFixed(1)}% paid
+                        </span>
+                      </div>
+                      <Progress value={progressPercentage} className="h-2" />
+                    </div>
 
-            {/* Payment info */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <TrendingDown className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-medium text-foreground">${loan.monthlyPayment}</p>
-                  <p className="text-sm text-muted-foreground">Monthly payment</p>
-                </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                          <TrendingDown className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium">${loan.emi_amount.toLocaleString()}</p>
+                          <p className="text-sm text-muted-foreground">Monthly EMI</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-orange-500/10 rounded-lg flex items-center justify-center">
+                          <Calendar className="h-5 w-5 text-orange-500" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{format(new Date(loan.next_emi_date), 'MMM dd, yyyy')}</p>
+                          <p className="text-sm text-muted-foreground">Next payment due</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground mb-4">No loans yet</p>
+                <Button onClick={() => setShowLoanForm(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Your First Loan
+                </Button>
               </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-warning/10 rounded-lg flex items-center justify-center">
-                  <Calendar className="h-5 w-5 text-warning" />
-                </div>
-                <div>
-                  <p className="font-medium text-foreground">{loan.nextPayment}</p>
-                  <p className="text-sm text-muted-foreground">Next payment due</p>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
-        ))}
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
-}
+};
+
+export default Loans;

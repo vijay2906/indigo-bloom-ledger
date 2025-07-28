@@ -11,6 +11,7 @@ import { useCategories } from "@/hooks/useCategories";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Loader2, Search, Filter } from "lucide-react";
 import { format } from "date-fns";
+import { formatCurrency } from "@/utils/currency";
 
 const Transactions = () => {
   const [showTransactionForm, setShowTransactionForm] = useState(false);
@@ -361,7 +362,7 @@ const Transactions = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ${Number(account.balance).toLocaleString()}
+                {formatCurrency(Number(account.balance), account.currency)}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 {account.currency}
@@ -415,7 +416,7 @@ const Transactions = () => {
                     <p className={`font-semibold ${
                       transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
                     }`}>
-                      {transaction.type === 'income' ? '+' : '-'}${Math.abs(Number(transaction.amount)).toLocaleString()}
+                      {transaction.type === 'income' ? '+' : '-'}{formatCurrency(Math.abs(Number(transaction.amount)), 'USD')}
                     </p>
                     <Badge variant="secondary" className="text-xs">
                       {transaction.type}
