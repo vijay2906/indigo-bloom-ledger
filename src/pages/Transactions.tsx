@@ -262,9 +262,9 @@ const Transactions = () => {
                           </SelectItem>
                         ))
                       ) : (
-                        <SelectItem value="" disabled>
+                        <div className="p-2 text-sm text-muted-foreground">
                           No accounts - Create one first
-                        </SelectItem>
+                        </div>
                       )}
                     </SelectContent>
                   </Select>
