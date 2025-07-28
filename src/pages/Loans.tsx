@@ -6,20 +6,24 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { useLoans, useCreateLoan, useCreateLoanPayment } from "@/hooks/useLoans";
+import { useLoans, useCreateLoan, useCreateLoanPayment, useUpdateLoan, useDeleteLoan } from "@/hooks/useLoans";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Loader2, Calendar, TrendingDown, DollarSign } from "lucide-react";
+import { Plus, Loader2, Calendar, TrendingDown, DollarSign, Edit2, Trash2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 
 const Loans = () => {
   const [showLoanForm, setShowLoanForm] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [editingLoan, setEditingLoan] = useState<any>(null);
   const { toast } = useToast();
   const { format: formatCurrency } = useCurrency();
 
   const { data: loans, isLoading } = useLoans();
   const createLoan = useCreateLoan();
+  const updateLoan = useUpdateLoan();
+  const deleteLoan = useDeleteLoan();
   const createPayment = useCreateLoanPayment();
 
   const [loanForm, setLoanForm] = useState({
@@ -39,24 +43,68 @@ const Loans = () => {
 
   const handleLoanSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createLoan.mutate({
-      ...loanForm,
-      principal_amount: parseFloat(loanForm.principal_amount),
-      interest_rate: parseFloat(loanForm.interest_rate),
-      tenure_months: parseInt(loanForm.tenure_months),
-    }, {
-      onSuccess: () => {
-        setLoanForm({
-          name: '',
-          type: 'personal',
-          principal_amount: '',
-          interest_rate: '',
-          tenure_months: '',
-          start_date: new Date().toISOString().split('T')[0],
-        });
-        setShowLoanForm(false);
-      },
+    
+    if (editingLoan) {
+      updateLoan.mutate({ 
+        id: editingLoan.id,
+        name: loanForm.name,
+        type: loanForm.type,
+        principal_amount: parseFloat(loanForm.principal_amount),
+        interest_rate: parseFloat(loanForm.interest_rate),
+        tenure_months: parseInt(loanForm.tenure_months),
+        start_date: loanForm.start_date,
+      }, {
+        onSuccess: () => {
+          setLoanForm({
+            name: '',
+            type: 'personal',
+            principal_amount: '',
+            interest_rate: '',
+            tenure_months: '',
+            start_date: new Date().toISOString().split('T')[0],
+          });
+          setShowLoanForm(false);
+          setEditingLoan(null);
+        },
+      });
+    } else {
+      createLoan.mutate({
+        ...loanForm,
+        principal_amount: parseFloat(loanForm.principal_amount),
+        interest_rate: parseFloat(loanForm.interest_rate),
+        tenure_months: parseInt(loanForm.tenure_months),
+      }, {
+        onSuccess: () => {
+          setLoanForm({
+            name: '',
+            type: 'personal',
+            principal_amount: '',
+            interest_rate: '',
+            tenure_months: '',
+            start_date: new Date().toISOString().split('T')[0],
+          });
+          setShowLoanForm(false);
+          setEditingLoan(null);
+        },
+      });
+    }
+  };
+
+  const handleEditLoan = (loan: any) => {
+    setLoanForm({
+      name: loan.name,
+      type: loan.type,
+      principal_amount: loan.principal_amount.toString(),
+      interest_rate: loan.interest_rate.toString(),
+      tenure_months: loan.tenure_months.toString(),
+      start_date: loan.start_date,
     });
+    setEditingLoan(loan);
+    setShowLoanForm(true);
+  };
+
+  const handleDeleteLoan = (id: string) => {
+    deleteLoan.mutate(id);
   };
 
   const handlePaymentSubmit = (e: React.FormEvent) => {
@@ -126,12 +174,12 @@ const Loans = () => {
         </div>
       </div>
 
-      {/* Add Loan Form */}
+      {/* Add/Edit Loan Form */}
       {showLoanForm && (
         <Card>
           <CardHeader>
-            <CardTitle>Add New Loan</CardTitle>
-            <CardDescription>Add a loan to track your debt and payments</CardDescription>
+            <CardTitle>{editingLoan ? 'Edit Loan' : 'Add New Loan'}</CardTitle>
+            <CardDescription>{editingLoan ? 'Update your loan details' : 'Add a loan to track your debt and payments'}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLoanSubmit} className="space-y-4">
@@ -216,15 +264,20 @@ const Loans = () => {
               </div>
 
               <div className="flex gap-2">
-                <Button type="submit" disabled={createLoan.isPending}>
-                  {createLoan.isPending ? (
+                <Button type="submit" disabled={createLoan.isPending || updateLoan.isPending}>
+                  {(createLoan.isPending || updateLoan.isPending) ? (
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : editingLoan ? (
+                    <Edit2 className="h-4 w-4 mr-2" />
                   ) : (
                     <Plus className="h-4 w-4 mr-2" />
                   )}
-                  Add Loan
+                  {editingLoan ? 'Update Loan' : 'Add Loan'}
                 </Button>
-                <Button type="button" variant="outline" onClick={() => setShowLoanForm(false)}>
+                <Button type="button" variant="outline" onClick={() => {
+                  setShowLoanForm(false);
+                  setEditingLoan(null);
+                }}>
                   Cancel
                 </Button>
               </div>
@@ -361,19 +414,58 @@ const Loans = () => {
                 return (
                   <div key={loan.id} className="p-4 border rounded-lg space-y-4">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-semibold text-lg">{loan.name}</h3>
-                        <p className="text-sm text-muted-foreground capitalize">
-                          {loan.type} • {loan.interest_rate}% APR • {loan.tenure_months} months
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-2xl font-bold text-red-600">
-                          {formatCurrency(loan.remaining_balance)}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          of {formatCurrency(loan.principal_amount)} remaining
-                        </p>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="font-semibold text-lg">{loan.name}</h3>
+                            <p className="text-sm text-muted-foreground capitalize">
+                              {loan.type} • {loan.interest_rate}% APR • {loan.tenure_months} months
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="text-right mr-4">
+                              <p className="text-2xl font-bold text-red-600">
+                                {formatCurrency(loan.remaining_balance)}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                of {formatCurrency(loan.principal_amount)} remaining
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditLoan(loan)}
+                              >
+                                <Edit2 className="h-4 w-4" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="outline" size="sm">
+                                    <Trash2 className="h-4 w-4 text-red-500" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete Loan</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Are you sure you want to delete this loan? This action cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleDeleteLoan(loan.id)}
+                                      className="bg-red-500 hover:bg-red-600"
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
 

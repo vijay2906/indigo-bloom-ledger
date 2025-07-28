@@ -5,17 +5,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { useTransactions, useCreateTransaction } from "@/hooks/useTransactions";
+import { useTransactions, useCreateTransaction, useUpdateTransaction, useDeleteTransaction } from "@/hooks/useTransactions";
 import { useAccounts, useCreateAccount } from "@/hooks/useAccounts";
 import { useCategories } from "@/hooks/useCategories";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Loader2, Search, Filter } from "lucide-react";
+import { Plus, Loader2, Search, Filter, Edit2, Trash2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 import { formatCurrency } from "@/utils/currency";
 
 const Transactions = () => {
   const [showTransactionForm, setShowTransactionForm] = useState(false);
   const [showAccountForm, setShowAccountForm] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<any>(null);
   const { toast } = useToast();
 
   const { data: transactions, isLoading } = useTransactions();
@@ -23,6 +25,8 @@ const Transactions = () => {
   const { data: categories } = useCategories();
   
   const createTransaction = useCreateTransaction();
+  const updateTransaction = useUpdateTransaction();
+  const deleteTransaction = useDeleteTransaction();
   const createAccount = useCreateAccount();
 
   const [transactionForm, setTransactionForm] = useState({
@@ -63,22 +67,54 @@ const Transactions = () => {
       return;
     }
     
-    createTransaction.mutate({
-      ...transactionForm,
-      amount: parseFloat(transactionForm.amount),
-    }, {
-      onSuccess: () => {
-        setTransactionForm({
-          account_id: '',
-          category_id: '',
-          amount: '',
-          description: '',
-          date: new Date().toISOString().split('T')[0],
-          type: 'expense',
-        });
-        setShowTransactionForm(false);
-      },
+    if (editingTransaction) {
+      updateTransaction.mutate({ id: editingTransaction.id, ...transactionForm, amount: parseFloat(transactionForm.amount) }, {
+        onSuccess: () => {
+          setTransactionForm({
+            account_id: '',
+            category_id: '',
+            amount: '',
+            description: '',
+            date: new Date().toISOString().split('T')[0],
+            type: 'expense',
+          });
+          setShowTransactionForm(false);
+          setEditingTransaction(null);
+        },
+      });
+    } else {
+      createTransaction.mutate({ ...transactionForm, amount: parseFloat(transactionForm.amount) }, {
+        onSuccess: () => {
+          setTransactionForm({
+            account_id: '',
+            category_id: '',
+            amount: '',
+            description: '',
+            date: new Date().toISOString().split('T')[0],
+            type: 'expense',
+          });
+          setShowTransactionForm(false);
+          setEditingTransaction(null);
+        },
+      });
+    }
+  };
+
+  const handleEditTransaction = (transaction: any) => {
+    setTransactionForm({
+      account_id: transaction.account_id,
+      category_id: transaction.category_id,
+      amount: transaction.amount.toString(),
+      description: transaction.description,
+      date: transaction.date,
+      type: transaction.type,
     });
+    setEditingTransaction(transaction);
+    setShowTransactionForm(true);
+  };
+
+  const handleDeleteTransaction = (id: string) => {
+    deleteTransaction.mutate(id);
   };
 
   const handleAccountSubmit = (e: React.FormEvent) => {
@@ -221,12 +257,12 @@ const Transactions = () => {
         </Card>
       )}
 
-      {/* Add Transaction Form */}
+      {/* Add/Edit Transaction Form */}
       {showTransactionForm && (
         <Card>
           <CardHeader>
-            <CardTitle>Add New Transaction</CardTitle>
-            <CardDescription>Record your income or expense</CardDescription>
+            <CardTitle>{editingTransaction ? 'Edit Transaction' : 'Add New Transaction'}</CardTitle>
+            <CardDescription>{editingTransaction ? 'Update your transaction details' : 'Record your income or expense'}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleTransactionSubmit} className="space-y-4">
@@ -329,16 +365,21 @@ const Transactions = () => {
               <div className="flex gap-2">
                 <Button 
                   type="submit" 
-                  disabled={createTransaction.isPending || !accounts || accounts.length === 0}
+                  disabled={(createTransaction.isPending || updateTransaction.isPending) || !accounts || accounts.length === 0}
                 >
-                  {createTransaction.isPending ? (
+                  {(createTransaction.isPending || updateTransaction.isPending) ? (
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : editingTransaction ? (
+                    <Edit2 className="h-4 w-4 mr-2" />
                   ) : (
                     <Plus className="h-4 w-4 mr-2" />
                   )}
-                  Add Transaction
+                  {editingTransaction ? 'Update Transaction' : 'Add Transaction'}
                 </Button>
-                <Button type="button" variant="outline" onClick={() => setShowTransactionForm(false)}>
+                <Button type="button" variant="outline" onClick={() => {
+                  setShowTransactionForm(false);
+                  setEditingTransaction(null);
+                }}>
                   Cancel
                 </Button>
                 {(!accounts || accounts.length === 0) && (
@@ -412,15 +453,50 @@ const Transactions = () => {
                       </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className={`font-semibold ${
-                      transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
-                    }`}>
-                      {transaction.type === 'income' ? '+' : '-'}{formatCurrency(Math.abs(Number(transaction.amount)), 'USD')}
-                    </p>
-                    <Badge variant="secondary" className="text-xs">
-                      {transaction.type}
-                    </Badge>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <p className={`font-semibold ${
+                        transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        {transaction.type === 'income' ? '+' : '-'}{formatCurrency(Math.abs(Number(transaction.amount)), 'USD')}
+                      </p>
+                      <Badge variant="secondary" className="text-xs">
+                        {transaction.type}
+                      </Badge>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditTransaction(transaction)}
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Transaction</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete this transaction? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDeleteTransaction(transaction.id)}
+                              className="bg-red-500 hover:bg-red-600"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </div>
                 </div>
               ))
