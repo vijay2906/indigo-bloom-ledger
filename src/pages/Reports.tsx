@@ -2,6 +2,7 @@ import { Download, Calendar, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CustomBarChart } from "@/components/charts/BarChart";
 import { CustomPieChart } from "@/components/charts/PieChart";
+import { useCurrency } from "@/hooks/useCurrency";
 import reportsIcon from "@/assets/reports-icon.jpg";
 
 const yearlyData = [
@@ -28,6 +29,7 @@ const categoryData = [
 ];
 
 export default function Reports() {
+  const { format } = useCurrency();
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -104,7 +106,7 @@ export default function Reports() {
                 <div key={index} className="flex items-center justify-between">
                   <span className="text-foreground">{category.name}</span>
                   <span className="font-medium metric-negative">
-                    ${category.value.toLocaleString()}
+                    {format(category.value)}
                   </span>
                 </div>
               ))}

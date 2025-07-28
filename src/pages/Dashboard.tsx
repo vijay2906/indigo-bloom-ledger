@@ -4,11 +4,13 @@ import { CustomBarChart as BarChart } from "@/components/charts/BarChart";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useDashboardData } from "@/hooks/useDashboard";
+import { useCurrency } from "@/hooks/useCurrency";
 import { DollarSign, TrendingUp, TrendingDown, CreditCard, Calendar, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 
 const Dashboard = () => {
   const { data: dashboardData, isLoading, error } = useDashboardData();
+  const { format: formatCurrency } = useCurrency();
 
   if (isLoading) {
     return (
@@ -74,28 +76,28 @@ const Dashboard = () => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           title="Net Worth"
-          value={`$${netWorth.toLocaleString()}`}
+          value={formatCurrency(netWorth)}
           change={netWorth > 0 ? "+12% from last month" : "Start tracking your finances"}
           changeType={netWorth > 0 ? "positive" : "neutral"}
           icon={<DollarSign className="h-6 w-6 text-primary" />}
         />
         <MetricCard
           title="Monthly Income"
-          value={`$${monthlyIncome.toLocaleString()}`}
+          value={formatCurrency(monthlyIncome)}
           change="Income this month"
           changeType="positive"
           icon={<TrendingUp className="h-6 w-6 text-success" />}
         />
         <MetricCard
           title="Monthly Expenses"
-          value={`$${monthlyExpenses.toLocaleString()}`}
+          value={formatCurrency(monthlyExpenses)}
           change="Expenses this month"
           changeType="negative"
           icon={<TrendingDown className="h-6 w-6 text-destructive" />}
         />
         <MetricCard
           title="Total Balance"
-          value={`$${totalBalance.toLocaleString()}`}
+          value={formatCurrency(totalBalance)}
           change="Across all accounts"
           changeType="neutral"
           icon={<CreditCard className="h-6 w-6 text-warning" />}
@@ -156,7 +158,7 @@ const Dashboard = () => {
                       <p className={`font-medium ${
                         transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
                       }`}>
-                        {transaction.type === 'income' ? '+' : '-'}${Math.abs(Number(transaction.amount)).toLocaleString()}
+                        {transaction.type === 'income' ? '+' : '-'}{formatCurrency(Math.abs(Number(transaction.amount)))}
                       </p>
                       <Badge variant="secondary" className="text-xs">
                         {transaction.account?.name}
@@ -194,7 +196,7 @@ const Dashboard = () => {
                       </p>
                     </div>
                     <p className="font-medium text-sm">
-                      ${Number(payment.emi_amount).toLocaleString()}
+                      {formatCurrency(Number(payment.emi_amount))}
                     </p>
                   </div>
                 ))

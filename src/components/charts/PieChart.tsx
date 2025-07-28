@@ -1,4 +1,5 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface PieChartData {
   name: string;
@@ -12,6 +13,8 @@ interface CustomPieChartProps {
 }
 
 export function CustomPieChart({ data, title }: CustomPieChartProps) {
+  const { format } = useCurrency();
+  
   return (
     <div className="finance-card p-6">
       {title && (
@@ -35,7 +38,7 @@ export function CustomPieChart({ data, title }: CustomPieChartProps) {
               ))}
             </Pie>
             <Tooltip 
-              formatter={(value: number) => [`$${value.toLocaleString()}`, 'Amount']}
+              formatter={(value: number) => [format(value), 'Amount']}
             />
             <Legend />
           </PieChart>

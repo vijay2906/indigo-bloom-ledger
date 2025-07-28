@@ -1,4 +1,5 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface BarChartData {
   name: string;
@@ -12,6 +13,8 @@ interface CustomBarChartProps {
 }
 
 export function CustomBarChart({ data, title }: CustomBarChartProps) {
+  const { format } = useCurrency();
+  
   return (
     <div className="finance-card p-6">
       {title && (
@@ -29,11 +32,11 @@ export function CustomBarChart({ data, title }: CustomBarChartProps) {
             <YAxis 
               stroke="hsl(var(--muted-foreground))"
               fontSize={12}
-              tickFormatter={(value) => `$${value.toLocaleString()}`}
+              tickFormatter={(value) => format(value)}
             />
             <Tooltip 
               formatter={(value: number, name: string) => [
-                `$${value.toLocaleString()}`, 
+                format(value), 
                 name.charAt(0).toUpperCase() + name.slice(1)
               ]}
               labelStyle={{ color: 'hsl(var(--foreground))' }}

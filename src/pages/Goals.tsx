@@ -1,6 +1,7 @@
 import { Plus, Target, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { useCurrency } from "@/hooks/useCurrency";
 import goalsIcon from "@/assets/goals-icon.jpg";
 
 const goals = [
@@ -39,6 +40,7 @@ const goals = [
 ];
 
 export default function Goals() {
+  const { format: formatCurrency } = useCurrency();
   const totalGoals = goals.reduce((sum, goal) => sum + goal.targetAmount, 0);
   const totalSaved = goals.reduce((sum, goal) => sum + goal.currentAmount, 0);
   const totalMonthly = goals.reduce((sum, goal) => sum + goal.monthlyContribution, 0);
@@ -76,19 +78,19 @@ export default function Goals() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="finance-card p-6">
           <h3 className="text-lg font-semibold text-foreground mb-2">Total Goals</h3>
-          <p className="text-3xl font-bold text-foreground">${totalGoals.toLocaleString()}</p>
+          <p className="text-3xl font-bold text-foreground">{formatCurrency(totalGoals)}</p>
           <p className="text-sm text-muted-foreground mt-1">Target amount</p>
         </div>
         <div className="finance-card p-6">
           <h3 className="text-lg font-semibold text-foreground mb-2">Total Saved</h3>
-          <p className="text-3xl font-bold metric-positive">${totalSaved.toLocaleString()}</p>
+          <p className="text-3xl font-bold metric-positive">{formatCurrency(totalSaved)}</p>
           <p className="text-sm text-muted-foreground mt-1">
             {((totalSaved / totalGoals) * 100).toFixed(1)}% complete
           </p>
         </div>
         <div className="finance-card p-6">
           <h3 className="text-lg font-semibold text-foreground mb-2">Monthly Savings</h3>
-          <p className="text-3xl font-bold text-primary">${totalMonthly.toLocaleString()}</p>
+          <p className="text-3xl font-bold text-primary">{formatCurrency(totalMonthly)}</p>
           <p className="text-sm text-muted-foreground mt-1">Total contributions</p>
         </div>
       </div>
@@ -104,10 +106,10 @@ export default function Goals() {
               </div>
               <div className="mt-2 lg:mt-0 text-left lg:text-right">
                 <p className="text-2xl font-bold text-foreground">
-                  ${goal.currentAmount.toLocaleString()}
+                  {formatCurrency(goal.currentAmount)}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  of ${goal.targetAmount.toLocaleString()}
+                  of {formatCurrency(goal.targetAmount)}
                 </p>
               </div>
             </div>
@@ -133,7 +135,7 @@ export default function Goals() {
                   <Target className="h-5 w-5 text-success" />
                 </div>
                 <div>
-                  <p className="font-medium text-foreground">${goal.monthlyContribution}</p>
+                  <p className="font-medium text-foreground">{formatCurrency(goal.monthlyContribution)}</p>
                   <p className="text-sm text-muted-foreground">Monthly contribution</p>
                 </div>
               </div>
@@ -143,7 +145,7 @@ export default function Goals() {
                 </div>
                 <div>
                   <p className="font-medium text-foreground">
-                    ${(goal.targetAmount - goal.currentAmount).toLocaleString()}
+                    {formatCurrency(goal.targetAmount - goal.currentAmount)}
                   </p>
                   <p className="text-sm text-muted-foreground">Remaining to save</p>
                 </div>

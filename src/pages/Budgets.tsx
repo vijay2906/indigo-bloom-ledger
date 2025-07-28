@@ -1,17 +1,34 @@
-import { Plus, PieChart } from "lucide-react";
+import { Plus, Target, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { useBudgets } from "@/hooks/useBudgets";
+import { useCurrency } from "@/hooks/useCurrency";
+import { useTransactions } from "@/hooks/useTransactions";
 import budgetsIcon from "@/assets/budgets-icon.jpg";
 
-const budgets = [
-  { category: "Housing", budgeted: 2500, spent: 2500, percentage: 100, color: "hsl(var(--primary))" },
-  { category: "Food", budgeted: 800, spent: 620, percentage: 77.5, color: "hsl(var(--success))" },
-  { category: "Transportation", budgeted: 600, spent: 480, percentage: 80, color: "hsl(var(--warning))" },
-  { category: "Entertainment", budgeted: 400, spent: 320, percentage: 80, color: "hsl(var(--destructive))" },
-  { category: "Utilities", budgeted: 300, spent: 280, percentage: 93.3, color: "hsl(var(--muted-foreground))" },
-];
-
 export default function Budgets() {
+  const { data: budgets = [], isLoading } = useBudgets();
+  const { data: transactions = [] } = useTransactions();
+  const { format } = useCurrency();
+
+  const budgetsWithSpending = budgets.map(budget => {
+    const spent = transactions
+      .filter(t => t.category_id === budget.category_id && t.type === 'expense')
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+    
+    const percentage = budget.amount > 0 ? (spent / budget.amount) * 100 : 0;
+    
+    return {
+      ...budget,
+      spent,
+      percentage,
+      color: budget.category?.color || '#8b5cf6'
+    };
+  });
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center min-h-96"><p className="text-muted-foreground">Loading budgets...</p></div>;
+  }
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -64,12 +81,12 @@ export default function Budgets() {
       <div className="finance-card p-6">
         <h3 className="text-lg font-semibold text-foreground mb-6">Budget Categories</h3>
         <div className="space-y-6">
-          {budgets.map((budget, index) => (
+          {budgetsWithSpending.map((budget, index) => (
             <div key={index} className="space-y-2">
               <div className="flex items-center justify-between">
-                <h4 className="font-medium text-foreground">{budget.category}</h4>
+                <h4 className="font-medium text-foreground">{budget.category?.name || budget.name}</h4>
                 <span className="text-sm text-muted-foreground">
-                  ${budget.spent.toLocaleString()} / ${budget.budgeted.toLocaleString()}
+                  {format(budget.spent)} / {format(budget.amount)}
                 </span>
               </div>
               <Progress 
@@ -84,7 +101,7 @@ export default function Budgets() {
                   {budget.percentage.toFixed(1)}% used
                 </span>
                 <span className="text-muted-foreground">
-                  ${(budget.budgeted - budget.spent).toLocaleString()} remaining
+                  {format(Math.max(0, budget.amount - budget.spent))} remaining
                 </span>
               </div>
             </div>

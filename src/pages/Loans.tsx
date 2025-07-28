@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useLoans, useCreateLoan, useCreateLoanPayment } from "@/hooks/useLoans";
+import { useCurrency } from "@/hooks/useCurrency";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Loader2, Calendar, TrendingDown, DollarSign } from "lucide-react";
 import { format } from "date-fns";
@@ -15,6 +16,7 @@ const Loans = () => {
   const [showLoanForm, setShowLoanForm] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const { toast } = useToast();
+  const { format: formatCurrency } = useCurrency();
 
   const { data: loans, isLoading } = useLoans();
   const createLoan = useCreateLoan();
@@ -308,7 +310,7 @@ const Loans = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              ${totalOwed.toLocaleString()}
+              {formatCurrency(totalOwed)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               Remaining balance
@@ -322,7 +324,7 @@ const Loans = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${monthlyPayments.toLocaleString()}
+              {formatCurrency(monthlyPayments)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               Total EMI
@@ -367,10 +369,10 @@ const Loans = () => {
                       </div>
                       <div className="text-right">
                         <p className="text-2xl font-bold text-red-600">
-                          ${loan.remaining_balance.toLocaleString()}
+                          {formatCurrency(loan.remaining_balance)}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          of ${loan.principal_amount.toLocaleString()} remaining
+                          of {formatCurrency(loan.principal_amount)} remaining
                         </p>
                       </div>
                     </div>
@@ -391,7 +393,7 @@ const Loans = () => {
                           <TrendingDown className="h-5 w-5 text-primary" />
                         </div>
                         <div>
-                          <p className="font-medium">${loan.emi_amount.toLocaleString()}</p>
+                          <p className="font-medium">{formatCurrency(loan.emi_amount)}</p>
                           <p className="text-sm text-muted-foreground">Monthly EMI</p>
                         </div>
                       </div>

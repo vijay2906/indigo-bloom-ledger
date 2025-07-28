@@ -3,8 +3,30 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useSettings, useUpdateSettings } from "@/hooks/useSettings";
+import { currencySymbols } from "@/utils/currency";
 
 export default function Settings() {
+  const { data: settings, isLoading } = useSettings();
+  const updateSettings = useUpdateSettings();
+
+  const handleCurrencyChange = (currency: string) => {
+    updateSettings.mutate({ currency });
+  };
+
+  const handleToggle = (field: string, value: boolean) => {
+    updateSettings.mutate({ [field]: value });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">Loading settings...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -34,7 +56,18 @@ export default function Settings() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="currency">Default Currency</Label>
-            <Input id="currency" defaultValue="USD ($)" />
+            <Select value={settings?.currency || 'INR'} onValueChange={handleCurrencyChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select currency" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(currencySymbols).map(([code, symbol]) => (
+                  <SelectItem key={code} value={code}>
+                    {code} ({symbol})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="timezone">Timezone</Label>
@@ -60,28 +93,40 @@ export default function Settings() {
               <p className="font-medium text-foreground">Email Notifications</p>
               <p className="text-sm text-muted-foreground">Receive updates about your finances via email</p>
             </div>
-            <Switch defaultChecked />
+            <Switch 
+              checked={settings?.notifications_enabled} 
+              onCheckedChange={(checked) => handleToggle('notifications_enabled', checked)}
+            />
           </div>
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium text-foreground">Budget Alerts</p>
               <p className="text-sm text-muted-foreground">Get notified when you're close to budget limits</p>
             </div>
-            <Switch defaultChecked />
+            <Switch 
+              checked={settings?.budget_alerts} 
+              onCheckedChange={(checked) => handleToggle('budget_alerts', checked)}
+            />
           </div>
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium text-foreground">Payment Reminders</p>
               <p className="text-sm text-muted-foreground">Reminders for upcoming loan and bill payments</p>
             </div>
-            <Switch defaultChecked />
+            <Switch 
+              checked={settings?.bill_reminders} 
+              onCheckedChange={(checked) => handleToggle('bill_reminders', checked)}
+            />
           </div>
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium text-foreground">Goal Updates</p>
               <p className="text-sm text-muted-foreground">Progress updates on your savings goals</p>
             </div>
-            <Switch />
+            <Switch 
+              checked={false} 
+              onCheckedChange={(checked) => console.log('Goal updates:', checked)}
+            />
           </div>
         </div>
       </div>

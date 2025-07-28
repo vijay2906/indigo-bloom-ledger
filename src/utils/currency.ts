@@ -27,8 +27,23 @@ export const getCurrencySymbol = (currency: string): string => {
 
 export const formatCurrency = (amount: number, currency: string = 'INR'): string => {
   const symbol = getCurrencySymbol(currency);
-  return `${symbol}${Math.abs(amount).toLocaleString('en-US', {
+  return `${symbol}${Math.abs(amount).toLocaleString('en-IN', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
+};
+
+export const formatCurrencyShort = (amount: number, currency: string = 'INR'): string => {
+  const symbol = getCurrencySymbol(currency);
+  const absAmount = Math.abs(amount);
+  
+  if (absAmount >= 10000000) {
+    return `${symbol}${(absAmount / 10000000).toFixed(1)}Cr`;
+  } else if (absAmount >= 100000) {
+    return `${symbol}${(absAmount / 100000).toFixed(1)}L`;
+  } else if (absAmount >= 1000) {
+    return `${symbol}${(absAmount / 1000).toFixed(1)}K`;
+  }
+  
+  return `${symbol}${absAmount.toLocaleString('en-IN')}`;
 };
