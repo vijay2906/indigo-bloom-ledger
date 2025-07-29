@@ -108,243 +108,294 @@ export default function Budgets() {
     );
   }
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Budgets</h1>
-          <p className="text-muted-foreground mt-1">
-            Plan and track your spending across different categories.
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-primary-light/20 to-secondary/30">
+      {/* Mobile App Header */}
+      <div className="sticky top-0 z-10 bg-card/80 backdrop-blur-xl border-b border-border/50 px-4 py-4 sm:px-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
+              <Target className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-foreground">Budgets</h1>
+              <p className="text-sm text-muted-foreground">Track your spending</p>
+            </div>
+          </div>
+          <Button 
+            onClick={() => setShowBudgetForm(true)} 
+            size="sm"
+            className="gradient-primary rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
         </div>
-        <Button onClick={() => setShowBudgetForm(true)} className="gradient-primary">
-          <Plus className="h-4 w-4 mr-2" />
-          Create Budget
-        </Button>
       </div>
 
-      {/* Add/Edit Budget Form */}
-      {showBudgetForm && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{editingBudget ? 'Edit Budget' : 'Create New Budget'}</CardTitle>
-            <CardDescription>{editingBudget ? 'Update your budget details' : 'Set spending limits for a category'}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleBudgetSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="budget-name">Budget Name *</Label>
-                  <Input
-                    id="budget-name"
-                    value={budgetForm.name}
-                    onChange={(e) => setBudgetForm({ ...budgetForm, name: e.target.value })}
-                    placeholder="e.g., Monthly Groceries"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="budget-category">Category *</Label>
-                  <Select
-                    value={budgetForm.category_id}
-                    onValueChange={(value) => setBudgetForm({ ...budgetForm, category_id: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories?.filter(c => c.type === 'expense').map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+      <div className="px-4 py-6 space-y-6 sm:px-6">
+
+        {/* Add/Edit Budget Form */}
+        {showBudgetForm && (
+          <Card className="mx-auto max-w-2xl shadow-xl border-0 gradient-card">
+            <CardHeader className="text-center pb-4">
+              <div className="w-16 h-16 rounded-full gradient-primary mx-auto mb-4 flex items-center justify-center">
+                {editingBudget ? <Edit2 className="h-8 w-8 text-white" /> : <Plus className="h-8 w-8 text-white" />}
               </div>
+              <CardTitle className="text-2xl">{editingBudget ? 'Edit Budget' : 'Create Budget'}</CardTitle>
+              <CardDescription className="text-base">{editingBudget ? 'Update your budget details' : 'Set spending limits for a category'}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <form onSubmit={handleBudgetSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <Label htmlFor="budget-name" className="text-sm font-medium">Budget Name *</Label>
+                    <Input
+                      id="budget-name"
+                      value={budgetForm.name}
+                      onChange={(e) => setBudgetForm({ ...budgetForm, name: e.target.value })}
+                      placeholder="e.g., Monthly Groceries"
+                      required
+                      className="h-12 rounded-xl border-2 focus:border-primary"
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <Label htmlFor="budget-category" className="text-sm font-medium">Category *</Label>
+                    <Select
+                      value={budgetForm.category_id}
+                      onValueChange={(value) => setBudgetForm({ ...budgetForm, category_id: value })}
+                    >
+                      <SelectTrigger className="h-12 rounded-xl border-2 focus:border-primary">
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        {categories?.filter(c => c.type === 'expense').map((category) => (
+                          <SelectItem key={category.id} value={category.id} className="rounded-lg">
+                            {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="budget-amount">Budget Amount *</Label>
-                  <Input
-                    id="budget-amount"
-                    type="number"
-                    step="0.01"
-                    value={budgetForm.amount}
-                    onChange={(e) => setBudgetForm({ ...budgetForm, amount: e.target.value })}
-                    placeholder="0.00"
-                    required
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <Label htmlFor="budget-amount" className="text-sm font-medium">Budget Amount *</Label>
+                    <Input
+                      id="budget-amount"
+                      type="number"
+                      step="0.01"
+                      value={budgetForm.amount}
+                      onChange={(e) => setBudgetForm({ ...budgetForm, amount: e.target.value })}
+                      placeholder="0.00"
+                      required
+                      className="h-12 rounded-xl border-2 focus:border-primary text-lg font-medium"
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <Label htmlFor="budget-period" className="text-sm font-medium">Period</Label>
+                    <Select
+                      value={budgetForm.period}
+                      onValueChange={(value: any) => setBudgetForm({ ...budgetForm, period: value })}
+                    >
+                      <SelectTrigger className="h-12 rounded-xl border-2 focus:border-primary">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        <SelectItem value="weekly" className="rounded-lg">Weekly</SelectItem>
+                        <SelectItem value="monthly" className="rounded-lg">Monthly</SelectItem>
+                        <SelectItem value="yearly" className="rounded-lg">Yearly</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="budget-period">Period</Label>
-                  <Select
-                    value={budgetForm.period}
-                    onValueChange={(value: any) => setBudgetForm({ ...budgetForm, period: value })}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <Label htmlFor="start-date" className="text-sm font-medium">Start Date</Label>
+                    <Input
+                      id="start-date"
+                      type="date"
+                      value={budgetForm.start_date}
+                      onChange={(e) => setBudgetForm({ ...budgetForm, start_date: e.target.value })}
+                      required
+                      className="h-12 rounded-xl border-2 focus:border-primary"
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <Label htmlFor="end-date" className="text-sm font-medium">End Date (Optional)</Label>
+                    <Input
+                      id="end-date"
+                      type="date"
+                      value={budgetForm.end_date}
+                      onChange={(e) => setBudgetForm({ ...budgetForm, end_date: e.target.value })}
+                      className="h-12 rounded-xl border-2 focus:border-primary"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                  <Button 
+                    type="submit" 
+                    disabled={createBudget.isPending || updateBudget.isPending}
+                    className="h-12 rounded-xl gradient-primary text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300 flex-1"
                   >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="weekly">Weekly</SelectItem>
-                      <SelectItem value="monthly">Monthly</SelectItem>
-                      <SelectItem value="yearly">Yearly</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    {(createBudget.isPending || updateBudget.isPending) ? (
+                      <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                    ) : editingBudget ? (
+                      <Edit2 className="h-5 w-5 mr-2" />
+                    ) : (
+                      <Plus className="h-5 w-5 mr-2" />
+                    )}
+                    {editingBudget ? 'Update Budget' : 'Create Budget'}
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => {
+                      setShowBudgetForm(false);
+                      setEditingBudget(null);
+                    }}
+                    className="h-12 rounded-xl border-2 font-medium flex-1 sm:flex-none sm:px-8"
+                  >
+                    Cancel
+                  </Button>
                 </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="start-date">Start Date</Label>
-                  <Input
-                    id="start-date"
-                    type="date"
-                    value={budgetForm.start_date}
-                    onChange={(e) => setBudgetForm({ ...budgetForm, start_date: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="end-date">End Date (Optional)</Label>
-                  <Input
-                    id="end-date"
-                    type="date"
-                    value={budgetForm.end_date}
-                    onChange={(e) => setBudgetForm({ ...budgetForm, end_date: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <Button type="submit" disabled={createBudget.isPending || updateBudget.isPending}>
-                  {(createBudget.isPending || updateBudget.isPending) ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  ) : editingBudget ? (
-                    <Edit2 className="h-4 w-4 mr-2" />
-                  ) : (
-                    <Plus className="h-4 w-4 mr-2" />
-                  )}
-                  {editingBudget ? 'Update Budget' : 'Create Budget'}
-                </Button>
-                <Button type="button" variant="outline" onClick={() => {
-                  setShowBudgetForm(false);
-                  setEditingBudget(null);
-                }}>
-                  Cancel
-                </Button>
-              </div>
             </form>
           </CardContent>
         </Card>
       )}
 
-      {/* Module illustration */}
-      <div className="finance-card p-8 text-center">
-        <img 
-          src={budgetsIcon} 
-          alt="Budgets" 
-          className="w-32 h-24 mx-auto rounded-lg object-cover mb-4"
-        />
-        <h3 className="text-lg font-semibold text-foreground">Budget Planning</h3>
-        <p className="text-muted-foreground mt-2">
-          Set spending limits and track your progress throughout the month.
-        </p>
-      </div>
+        {/* Quick Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="finance-card p-6 gradient-card">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
+                <Target className="h-4 w-4 text-white" />
+              </div>
+              <h3 className="font-semibold text-foreground">Total Budget</h3>
+            </div>
+            <p className="text-2xl font-bold text-foreground">{format(totalBudget)}</p>
+            <p className="text-sm text-muted-foreground mt-1">Monthly allocation</p>
+          </div>
+          
+          <div className="finance-card p-6 gradient-card">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-destructive flex items-center justify-center">
+                <AlertTriangle className="h-4 w-4 text-white" />
+              </div>
+              <h3 className="font-semibold text-foreground">Spent</h3>
+            </div>
+            <p className="text-2xl font-bold metric-negative">{format(totalSpent)}</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {totalBudget > 0 ? ((totalSpent / totalBudget) * 100).toFixed(1) : 0}% of budget
+            </p>
+          </div>
+          
+          <div className="finance-card p-6 gradient-card">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-8 h-8 rounded-lg gradient-success flex items-center justify-center">
+                <Target className="h-4 w-4 text-white" />
+              </div>
+              <h3 className="font-semibold text-foreground">Remaining</h3>
+            </div>
+            <p className="text-2xl font-bold metric-positive">{format(Math.max(0, totalRemaining))}</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {totalBudget > 0 ? ((totalRemaining / totalBudget) * 100).toFixed(1) : 0}% remaining
+            </p>
+          </div>
+        </div>
 
-      {/* Budget Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="finance-card p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-2">Total Budget</h3>
-          <p className="text-3xl font-bold text-foreground">{format(totalBudget)}</p>
-          <p className="text-sm text-muted-foreground mt-1">Monthly allocation</p>
-        </div>
-        <div className="finance-card p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-2">Spent</h3>
-          <p className="text-3xl font-bold metric-negative">{format(totalSpent)}</p>
-          <p className="text-sm text-muted-foreground mt-1">
-            {totalBudget > 0 ? ((totalSpent / totalBudget) * 100).toFixed(1) : 0}% of budget
-          </p>
-        </div>
-        <div className="finance-card p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-2">Remaining</h3>
-          <p className="text-3xl font-bold metric-positive">{format(Math.max(0, totalRemaining))}</p>
-          <p className="text-sm text-muted-foreground mt-1">
-            {totalBudget > 0 ? ((totalRemaining / totalBudget) * 100).toFixed(1) : 0}% remaining
-          </p>
-        </div>
-      </div>
 
-      {/* Budget Categories */}
-      <div className="finance-card p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-6">Budget Categories</h3>
-        <div className="space-y-6">
+        {/* Budget Categories */}
+        <div className="space-y-4">
           {budgetsWithSpending.length > 0 ? (
             budgetsWithSpending.map((budget) => (
-              <div key={budget.id} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <h4 className="font-medium text-foreground">{budget.category?.name || budget.name}</h4>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEditBudget(budget)}
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="sm">
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Budget</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete this budget? This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDeleteBudget(budget.id)}
-                              className="bg-red-500 hover:bg-red-600"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+              <div key={budget.id} className="finance-card p-6 gradient-card hover:shadow-xl transition-all duration-300">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
+                      <Target className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-foreground">{budget.category?.name || budget.name}</h4>
+                      <p className="text-sm text-muted-foreground">{budget.period} budget</p>
                     </div>
                   </div>
-                  <span className="text-sm text-muted-foreground">
-                    {format(budget.spent)} / {format(budget.amount)}
-                  </span>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEditBudget(budget)}
+                      className="rounded-full w-8 h-8 p-0"
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="rounded-full w-8 h-8 p-0">
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="rounded-xl">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Budget</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete this budget? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDeleteBudget(budget.id)}
+                            className="bg-destructive hover:bg-destructive/90 rounded-xl"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </div>
-                <Progress 
-                  value={budget.percentage} 
-                  className="h-3"
-                />
-                <div className="flex items-center justify-between text-sm">
-                  <span className={`font-medium ${
-                    budget.percentage > 90 ? 'metric-negative' : 
-                    budget.percentage > 75 ? 'text-warning' : 'metric-positive'
-                  }`}>
-                    {budget.percentage.toFixed(1)}% used
-                  </span>
-                  <span className="text-muted-foreground">
-                    {format(Math.max(0, budget.amount - budget.spent))} remaining
-                  </span>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-foreground">{format(budget.spent)}</span>
+                    <span className="text-sm text-muted-foreground">of {format(budget.amount)}</span>
+                  </div>
+                  
+                  <div className="relative">
+                    <Progress 
+                      value={budget.percentage} 
+                      className="h-2 rounded-full"
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className={`text-sm font-medium px-2 py-1 rounded-full ${
+                      budget.percentage > 90 ? 'bg-destructive-light text-destructive' : 
+                      budget.percentage > 75 ? 'bg-warning-light text-warning' : 'bg-success-light text-success'
+                    }`}>
+                      {budget.percentage.toFixed(1)}% used
+                    </span>
+                    <span className="text-sm font-medium text-success">
+                      {format(Math.max(0, budget.amount - budget.spent))} left
+                    </span>
+                  </div>
                 </div>
               </div>
             ))
           ) : (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground mb-4">No budgets yet</p>
-              <Button onClick={() => setShowBudgetForm(true)}>
-                <Plus className="h-4 w-4 mr-2" />
+            <div className="finance-card p-12 text-center gradient-card">
+              <div className="w-16 h-16 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
+                <Target className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">No budgets yet</h3>
+              <p className="text-muted-foreground mb-6">Start managing your finances by creating your first budget</p>
+              <Button 
+                onClick={() => setShowBudgetForm(true)}
+                className="gradient-primary rounded-full px-8 py-3 shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                <Plus className="h-5 w-5 mr-2" />
                 Create Your First Budget
               </Button>
             </div>
