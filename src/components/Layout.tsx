@@ -11,7 +11,8 @@ import {
   Menu,
   X,
   LogOut,
-  User
+  User,
+  DollarSign
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -58,157 +59,129 @@ export function Layout() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Mobile header */}
-      <div className="lg:hidden bg-card border-b border-border/50 px-4 py-3">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold gradient-primary bg-clip-text text-transparent">
-            MyFinancials
-          </h1>
+    <div className="min-h-screen bg-gradient-to-br from-primary-light/10 to-secondary/20">
+      {/* Mobile Navigation Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-lg border-b border-border/50">
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
+              <DollarSign className="h-4 w-4 text-white" />
+            </div>
+            <span className="font-semibold text-foreground">MyFinancials</span>
+          </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="rounded-full w-8 h-8 p-0"
           >
-            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </Button>
         </div>
       </div>
 
-      {/* Mobile navigation */}
+      {/* Mobile Sidebar Overlay */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-card border-b border-border/50">
-          <nav className="px-4 py-2 space-y-1">
-            {navigation.map((item) => {
-              const isActive = location.pathname === item.href;
-              return (
-                <NavLink
-                  key={item.name}
-                  to={item.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={cn(
-                    "flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                    isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                  )}
-                >
-                  <item.icon className="mr-3 h-4 w-4" />
-                  {item.name}
-                </NavLink>
-              );
-            })}
-          </nav>
-          
-          {/* Mobile user info and logout */}
-          <div className="border-t px-4 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="flex-shrink-0">
-                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <User className="h-4 w-4 text-primary" />
-                  </div>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-foreground truncate">
-                    {user?.email}
-                  </p>
-                  <Badge variant="secondary" className="text-xs">
-                    Authenticated
-                  </Badge>
-                </div>
+        <div className="lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}>
+          <div className="fixed top-0 left-0 h-full w-80 bg-card/95 backdrop-blur-xl border-r border-border/50 p-6" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
+                <DollarSign className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-lg font-bold text-foreground">MyFinancials</span>
+            </div>
+            
+            <nav className="space-y-2">
+              {navigation.map((item) => {
+                const IconComponent = item.icon;
+                const isActive = location.pathname === item.href;
+                return (
+                  <NavLink
+                    key={item.name}
+                    to={item.href}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                      isActive
+                        ? 'bg-primary text-white shadow-lg'
+                        : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <IconComponent className="h-5 w-5" />
+                    <span className="font-medium">{item.name}</span>
+                  </NavLink>
+                );
+              })}
+            </nav>
+            
+            <div className="absolute bottom-6 left-6 right-6">
+              <div className="p-4 rounded-xl bg-gradient-to-r from-primary/10 to-secondary/10 border border-border/50">
+                <p className="text-sm font-medium text-foreground">Welcome back!</p>
+                <p className="text-xs text-muted-foreground">{user?.email}</p>
               </div>
               <Button
-                variant="ghost"
-                size="sm"
                 onClick={handleSignOut}
-                className="text-muted-foreground hover:text-foreground"
+                variant="outline"
+                className="w-full mt-4 rounded-xl"
               >
-                <LogOut className="h-4 w-4" />
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
               </Button>
             </div>
           </div>
         </div>
       )}
 
-      <div className="lg:flex">
-        {/* Desktop sidebar */}
-        <div className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0">
-          <div className="flex flex-col flex-grow pt-5 bg-card border-r border-border/50 overflow-y-auto">
-            <div className="flex items-center flex-shrink-0 px-6">
-              <h1 className="text-2xl font-bold gradient-primary bg-clip-text text-transparent">
-                MyFinancials
-              </h1>
-            </div>
-            <div className="mt-8 flex-grow flex flex-col">
-              <nav className="flex-1 px-4 space-y-2">
-                {navigation.map((item) => {
-                  const isActive = location.pathname === item.href;
-                  return (
-                    <NavLink
-                      key={item.name}
-                      to={item.href}
-                      className={cn(
-                        "group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200",
-                        isActive
-                          ? "bg-primary text-primary-foreground shadow-md"
-                          : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                      )}
-                    >
-                      <item.icon
-                        className={cn(
-                          "mr-3 h-5 w-5 transition-colors",
-                          isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"
-                        )}
-                      />
-                      {item.name}
-                    </NavLink>
-                  );
-                })}
-              </nav>
-              
-              {/* Desktop user info and logout */}
-              <div className="border-t p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="flex-shrink-0">
-                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                        <User className="h-4 w-4 text-primary" />
-                      </div>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-foreground truncate">
-                        {user?.email}
-                      </p>
-                      <Badge variant="secondary" className="text-xs">
-                        Authenticated
-                      </Badge>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleSignOut}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    <LogOut className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:block fixed left-0 top-0 h-full w-64 bg-card/95 backdrop-blur-xl border-r border-border/50 p-6">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
+            <DollarSign className="h-5 w-5 text-white" />
           </div>
+          <span className="text-lg font-bold text-foreground">MyFinancials</span>
         </div>
+        
+        <nav className="space-y-2">
+          {navigation.map((item) => {
+            const IconComponent = item.icon;
+            const isActive = location.pathname === item.href;
+            return (
+              <NavLink
+                key={item.name}
+                to={item.href}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                  isActive
+                    ? 'bg-primary text-white shadow-lg'
+                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                }`}
+              >
+                <IconComponent className="h-5 w-5" />
+                <span className="font-medium">{item.name}</span>
+              </NavLink>
+            );
+          })}
+        </nav>
+        
+        <div className="absolute bottom-6 left-6 right-6">
+          <div className="p-4 rounded-xl bg-gradient-to-r from-primary/10 to-secondary/10 border border-border/50">
+            <p className="text-sm font-medium text-foreground">Welcome back!</p>
+            <p className="text-xs text-muted-foreground">{user?.email}</p>
+          </div>
+          <Button
+            onClick={handleSignOut}
+            variant="outline"
+            className="w-full mt-4 rounded-xl"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Sign Out
+          </Button>
+        </div>
+      </div>
 
-        {/* Main content */}
-        <div className="lg:pl-64 flex flex-col flex-1">
-          <main className="flex-1">
-            <div className="py-6">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <Outlet />
-              </div>
-            </div>
-          </main>
-        </div>
+      {/* Main Content */}
+      <div className="lg:ml-64 pt-16 lg:pt-0">
+        <main className="min-h-screen">
+          <Outlet />
+        </main>
       </div>
     </div>
   );

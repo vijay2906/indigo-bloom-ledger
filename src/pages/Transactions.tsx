@@ -144,32 +144,40 @@ const Transactions = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold gradient-primary bg-clip-text text-transparent">
-            Transactions
-          </h1>
-          <p className="text-muted-foreground">
-            Track your income and expenses
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button 
-            onClick={() => setShowAccountForm(true)}
-            variant="outline"
-            size="sm"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Account
-          </Button>
-          <Button onClick={() => setShowTransactionForm(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Transaction
-          </Button>
+    <div className="min-h-screen bg-gradient-to-br from-primary-light/20 to-secondary/30">
+      {/* Mobile App Header */}
+      <div className="sticky top-0 z-10 bg-card/80 backdrop-blur-xl border-b border-border/50 px-4 py-4 sm:px-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
+              <Plus className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-foreground">Transactions</h1>
+              <p className="text-sm text-muted-foreground">Track your money</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => setShowAccountForm(true)}
+              variant="outline"
+              size="sm"
+              className="rounded-full w-8 h-8 p-0"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+            <Button 
+              onClick={() => setShowTransactionForm(true)}
+              size="sm"
+              className="gradient-primary rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
+
+      <div className="px-4 py-6 space-y-6 sm:px-6">
 
       {/* Add Account Form */}
       {showAccountForm && (
@@ -519,6 +527,7 @@ const Transactions = () => {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };

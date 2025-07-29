@@ -28,14 +28,21 @@ export default function Settings() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Settings</h1>
-        <p className="text-muted-foreground mt-1">
-          Manage your account preferences and application settings.
-        </p>
+    <div className="min-h-screen bg-gradient-to-br from-primary-light/20 to-secondary/30">
+      {/* Mobile App Header */}
+      <div className="sticky top-0 z-10 bg-card/80 backdrop-blur-xl border-b border-border/50 px-4 py-4 sm:px-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
+            <User className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-foreground">Settings</h1>
+            <p className="text-sm text-muted-foreground">Manage preferences</p>
+          </div>
+        </div>
       </div>
+
+      <div className="px-4 py-6 space-y-6 sm:px-6">
 
       {/* Profile Settings */}
       <div className="finance-card p-6">
@@ -178,6 +185,7 @@ export default function Settings() {
             </p>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

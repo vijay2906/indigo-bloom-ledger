@@ -10,20 +10,29 @@ export default function Reports() {
   const { format } = useCurrency();
   const reportData = useReports();
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Reports</h1>
-          <p className="text-muted-foreground mt-1">
-            Analyze your financial data with detailed reports and insights.
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-primary-light/20 to-secondary/30">
+      {/* Mobile App Header */}
+      <div className="sticky top-0 z-10 bg-card/80 backdrop-blur-xl border-b border-border/50 px-4 py-4 sm:px-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
+              <TrendingUp className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-foreground">Reports</h1>
+              <p className="text-sm text-muted-foreground">Financial insights</p>
+            </div>
+          </div>
+          <Button 
+            size="sm"
+            className="gradient-primary rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+          >
+            <Download className="h-4 w-4" />
+          </Button>
         </div>
-        <Button className="gradient-primary">
-          <Download className="h-4 w-4 mr-2" />
-          Export Report
-        </Button>
       </div>
+
+      <div className="px-4 py-6 space-y-6 sm:px-6">
 
       {/* Module illustration */}
       <div className="finance-card p-8 text-center">
@@ -115,6 +124,7 @@ export default function Reports() {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

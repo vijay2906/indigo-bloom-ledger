@@ -120,31 +120,41 @@ export default function Goals() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Savings Goals</h1>
-          <p className="text-muted-foreground mt-1">
-            Set and track your savings goals to achieve your financial dreams.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button 
-            onClick={() => setShowContributionForm(true)}
-            variant="outline"
-            size="sm"
-            disabled={goals.length === 0}
-          >
-            <Target className="h-4 w-4 mr-2" />
-            Add Contribution
-          </Button>
-          <Button onClick={() => setShowGoalForm(true)} className="gradient-primary">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Goal
-          </Button>
+    <div className="min-h-screen bg-gradient-to-br from-primary-light/20 to-secondary/30">
+      {/* Mobile App Header */}
+      <div className="sticky top-0 z-10 bg-card/80 backdrop-blur-xl border-b border-border/50 px-4 py-4 sm:px-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
+              <Target className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-foreground">Goals</h1>
+              <p className="text-sm text-muted-foreground">Track your savings</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => setShowContributionForm(true)}
+              variant="outline"
+              size="sm"
+              disabled={goals.length === 0}
+              className="rounded-full w-8 h-8 p-0"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+            <Button 
+              onClick={() => setShowGoalForm(true)} 
+              size="sm"
+              className="gradient-primary rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
+
+      <div className="px-4 py-6 space-y-6 sm:px-6">
 
       {/* Add/Edit Goal Form */}
       {showGoalForm && (
@@ -451,6 +461,7 @@ export default function Goals() {
             </Button>
           </div>
         )}
+        </div>
       </div>
     </div>
   );
