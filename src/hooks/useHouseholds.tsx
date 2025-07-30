@@ -71,19 +71,23 @@ export const useCreateHousehold = () => {
 
   return useMutation({
     mutationFn: async (data: CreateHouseholdData) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      console.log('Auth user from supabase.auth.getUser():', user);
+      // Get the session instead of just the user to ensure we have the access token
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      console.log('Auth session from supabase.auth.getSession():', session);
       
-      if (!user) throw new Error('User not authenticated');
+      if (sessionError || !session?.user) {
+        console.error('Session error:', sessionError);
+        throw new Error('User not authenticated');
+      }
 
-      console.log('Creating household with user ID:', user.id);
+      console.log('Creating household with user ID:', session.user.id);
       
       // Create household
       const { data: household, error: householdError } = await supabase
         .from('households')
         .insert({
           name: data.name,
-          created_by: user.id,
+          created_by: session.user.id,
         })
         .select()
         .single();
@@ -97,7 +101,7 @@ export const useCreateHousehold = () => {
         .from('household_members')
         .insert({
           household_id: household.id,
-          user_id: user.id,
+          user_id: session.user.id,
           role: 'owner',
         });
 
