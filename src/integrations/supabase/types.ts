@@ -577,6 +577,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_households: {
+        Args: { user_uuid: string }
+        Returns: {
+          household_id: string
+        }[]
+      }
+      get_user_owned_households: {
+        Args: { user_uuid: string }
+        Returns: {
+          household_id: string
+        }[]
+      }
       is_household_member: {
         Args: { household_uuid: string; user_uuid: string }
         Returns: boolean
