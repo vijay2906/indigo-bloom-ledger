@@ -139,7 +139,7 @@ export const useInviteMember = () => {
       const { data: profiles, error: profileError } = await supabase
         .from('profiles')
         .select('user_id')
-        .eq('user_id', data.user_email); // This would need to be updated to search by email
+        .eq('email', data.user_email); // Now correctly searching by email field
 
       if (profileError) throw profileError;
       if (!profiles || profiles.length === 0) {
