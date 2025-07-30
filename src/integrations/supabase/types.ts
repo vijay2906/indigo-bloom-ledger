@@ -19,6 +19,7 @@ export type Database = {
           balance: number
           created_at: string
           currency: string
+          household_id: string | null
           id: string
           is_active: boolean
           name: string
@@ -30,6 +31,7 @@ export type Database = {
           balance?: number
           created_at?: string
           currency?: string
+          household_id?: string | null
           id?: string
           is_active?: boolean
           name: string
@@ -41,6 +43,7 @@ export type Database = {
           balance?: number
           created_at?: string
           currency?: string
+          household_id?: string | null
           id?: string
           is_active?: boolean
           name?: string
@@ -48,7 +51,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "accounts_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       budgets: {
         Row: {
@@ -56,6 +67,7 @@ export type Database = {
           category_id: string
           created_at: string
           end_date: string | null
+          household_id: string | null
           id: string
           is_active: boolean
           name: string
@@ -69,6 +81,7 @@ export type Database = {
           category_id: string
           created_at?: string
           end_date?: string | null
+          household_id?: string | null
           id?: string
           is_active?: boolean
           name: string
@@ -82,6 +95,7 @@ export type Database = {
           category_id?: string
           created_at?: string
           end_date?: string | null
+          household_id?: string | null
           id?: string
           is_active?: boolean
           name?: string
@@ -96,6 +110,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "budgets_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
             referencedColumns: ["id"]
           },
         ]
@@ -133,6 +154,7 @@ export type Database = {
           contribution_date: string
           created_at: string
           goal_id: string
+          household_id: string | null
           id: string
           notes: string | null
           user_id: string
@@ -142,6 +164,7 @@ export type Database = {
           contribution_date?: string
           created_at?: string
           goal_id: string
+          household_id?: string | null
           id?: string
           notes?: string | null
           user_id: string
@@ -151,6 +174,7 @@ export type Database = {
           contribution_date?: string
           created_at?: string
           goal_id?: string
+          household_id?: string | null
           id?: string
           notes?: string | null
           user_id?: string
@@ -163,6 +187,13 @@ export type Database = {
             referencedRelation: "goals"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "goal_contributions_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
         ]
       }
       goals: {
@@ -171,6 +202,7 @@ export type Database = {
           created_at: string
           current_amount: number
           description: string | null
+          household_id: string | null
           id: string
           is_active: boolean
           name: string
@@ -184,6 +216,7 @@ export type Database = {
           created_at?: string
           current_amount?: number
           description?: string | null
+          household_id?: string | null
           id?: string
           is_active?: boolean
           name: string
@@ -197,6 +230,7 @@ export type Database = {
           created_at?: string
           current_amount?: number
           description?: string | null
+          household_id?: string | null
           id?: string
           is_active?: boolean
           name?: string
@@ -205,12 +239,80 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "goals_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      household_members: {
+        Row: {
+          household_id: string
+          id: string
+          invited_by: string | null
+          joined_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          household_id: string
+          id?: string
+          invited_by?: string | null
+          joined_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          household_id?: string
+          id?: string
+          invited_by?: string | null
+          joined_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "household_members_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      households: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
         Relationships: []
       }
       loan_payments: {
         Row: {
           amount: number
           created_at: string
+          household_id: string | null
           id: string
           interest_component: number
           loan_id: string
@@ -222,6 +324,7 @@ export type Database = {
         Insert: {
           amount: number
           created_at?: string
+          household_id?: string | null
           id?: string
           interest_component: number
           loan_id: string
@@ -233,6 +336,7 @@ export type Database = {
         Update: {
           amount?: number
           created_at?: string
+          household_id?: string | null
           id?: string
           interest_component?: number
           loan_id?: string
@@ -242,6 +346,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "loan_payments_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "loan_payments_loan_id_fkey"
             columns: ["loan_id"]
@@ -255,6 +366,7 @@ export type Database = {
         Row: {
           created_at: string
           emi_amount: number
+          household_id: string | null
           id: string
           interest_rate: number
           is_active: boolean
@@ -271,6 +383,7 @@ export type Database = {
         Insert: {
           created_at?: string
           emi_amount: number
+          household_id?: string | null
           id?: string
           interest_rate: number
           is_active?: boolean
@@ -287,6 +400,7 @@ export type Database = {
         Update: {
           created_at?: string
           emi_amount?: number
+          household_id?: string | null
           id?: string
           interest_rate?: number
           is_active?: boolean
@@ -300,7 +414,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "loans_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -340,6 +462,7 @@ export type Database = {
           created_at: string
           date: string
           description: string
+          household_id: string | null
           id: string
           is_recurring: boolean
           notes: string | null
@@ -356,6 +479,7 @@ export type Database = {
           created_at?: string
           date?: string
           description: string
+          household_id?: string | null
           id?: string
           is_recurring?: boolean
           notes?: string | null
@@ -372,6 +496,7 @@ export type Database = {
           created_at?: string
           date?: string
           description?: string
+          household_id?: string | null
           id?: string
           is_recurring?: boolean
           notes?: string | null
@@ -394,6 +519,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
             referencedColumns: ["id"]
           },
         ]
@@ -445,7 +577,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_household_member: {
+        Args: { household_uuid: string; user_uuid: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
