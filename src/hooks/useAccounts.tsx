@@ -57,9 +57,75 @@ export const useCreateAccount = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       toast({
         title: "Account created",
         description: "Your account has been created successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message,
+      });
+    },
+  });
+};
+
+export const useUpdateAccount = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, ...data }: { id: string } & Partial<CreateAccountData>) => {
+      const { data: result, error } = await supabase
+        .from('accounts')
+        .update(data)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      toast({
+        title: "Account updated",
+        description: "Your account has been updated successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message,
+      });
+    },
+  });
+};
+
+export const useDeleteAccount = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('accounts')
+        .update({ is_active: false })
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      toast({
+        title: "Account deleted",
+        description: "Your account has been deleted successfully.",
       });
     },
     onError: (error) => {

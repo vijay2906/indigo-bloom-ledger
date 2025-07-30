@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useTransactions, useCreateTransaction, useUpdateTransaction, useDeleteTransaction } from "@/hooks/useTransactions";
-import { useAccounts, useCreateAccount } from "@/hooks/useAccounts";
+import { useAccounts, useCreateAccount, useUpdateAccount, useDeleteAccount } from "@/hooks/useAccounts";
+import { useNotifications } from "@/hooks/useNotifications";
 import { useCategories } from "@/hooks/useCategories";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Loader2, Search, Filter, Edit2, Trash2 } from "lucide-react";
@@ -18,6 +19,7 @@ const Transactions = () => {
   const [showTransactionForm, setShowTransactionForm] = useState(false);
   const [showAccountForm, setShowAccountForm] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<any>(null);
+  const [editingAccount, setEditingAccount] = useState<any>(null);
   const { toast } = useToast();
 
   const { data: transactions, isLoading } = useTransactions();
@@ -28,6 +30,9 @@ const Transactions = () => {
   const updateTransaction = useUpdateTransaction();
   const deleteTransaction = useDeleteTransaction();
   const createAccount = useCreateAccount();
+  const updateAccount = useUpdateAccount();
+  const deleteAccount = useDeleteAccount();
+  const { sendTransactionNotification } = useNotifications();
 
   const [transactionForm, setTransactionForm] = useState({
     account_id: '',
@@ -84,7 +89,10 @@ const Transactions = () => {
       });
     } else {
       createTransaction.mutate({ ...transactionForm, amount: parseFloat(transactionForm.amount) }, {
-        onSuccess: () => {
+        onSuccess: (newTransaction) => {
+          // Send notification
+          sendTransactionNotification('created', newTransaction as any, 'user@example.com', 'User');
+          
           setTransactionForm({
             account_id: '',
             category_id: '',
@@ -113,26 +121,66 @@ const Transactions = () => {
     setShowTransactionForm(true);
   };
 
-  const handleDeleteTransaction = (id: string) => {
-    deleteTransaction.mutate(id);
+  const handleDeleteTransaction = (transaction: any) => {
+    deleteTransaction.mutate(transaction.id, {
+      onSuccess: () => {
+        // Send notification
+        sendTransactionNotification('deleted', transaction, 'user@example.com', 'User');
+      },
+    });
   };
 
   const handleAccountSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createAccount.mutate({
-      ...accountForm,
-      balance: parseFloat(accountForm.balance) || 0,
-    }, {
-      onSuccess: () => {
-        setAccountForm({
-          name: '',
-          type: 'checking',
-          balance: '',
-          currency: 'USD',
-        });
-        setShowAccountForm(false);
-      },
+    
+    if (editingAccount) {
+      updateAccount.mutate({
+        id: editingAccount.id,
+        ...accountForm,
+        balance: parseFloat(accountForm.balance) || 0,
+      }, {
+        onSuccess: () => {
+          setAccountForm({
+            name: '',
+            type: 'checking',
+            balance: '',
+            currency: 'USD',
+          });
+          setShowAccountForm(false);
+          setEditingAccount(null);
+        },
+      });
+    } else {
+      createAccount.mutate({
+        ...accountForm,
+        balance: parseFloat(accountForm.balance) || 0,
+      }, {
+        onSuccess: () => {
+          setAccountForm({
+            name: '',
+            type: 'checking',
+            balance: '',
+            currency: 'USD',
+          });
+          setShowAccountForm(false);
+        },
+      });
+    }
+  };
+
+  const handleEditAccount = (account: any) => {
+    setAccountForm({
+      name: account.name,
+      type: account.type,
+      balance: account.balance.toString(),
+      currency: account.currency,
     });
+    setEditingAccount(account);
+    setShowAccountForm(true);
+  };
+
+  const handleDeleteAccount = (id: string) => {
+    deleteAccount.mutate(id);
   };
 
   if (isLoading) {
@@ -183,8 +231,8 @@ const Transactions = () => {
       {showAccountForm && (
         <Card>
           <CardHeader>
-            <CardTitle>Add New Account</CardTitle>
-            <CardDescription>Add a bank account, credit card, or cash account</CardDescription>
+            <CardTitle>{editingAccount ? 'Edit Account' : 'Add New Account'}</CardTitle>
+            <CardDescription>{editingAccount ? 'Update your account details' : 'Add a bank account, credit card, or cash account'}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleAccountSubmit} className="space-y-4">
@@ -248,15 +296,26 @@ const Transactions = () => {
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button type="submit" disabled={createAccount.isPending}>
-                  {createAccount.isPending ? (
+                <Button type="submit" disabled={createAccount.isPending || updateAccount.isPending}>
+                  {(createAccount.isPending || updateAccount.isPending) ? (
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : editingAccount ? (
+                    <Edit2 className="h-4 w-4 mr-2" />
                   ) : (
                     <Plus className="h-4 w-4 mr-2" />
                   )}
-                  Add Account
+                  {editingAccount ? 'Update Account' : 'Add Account'}
                 </Button>
-                <Button type="button" variant="outline" onClick={() => setShowAccountForm(false)}>
+                <Button type="button" variant="outline" onClick={() => {
+                  setShowAccountForm(false);
+                  setEditingAccount(null);
+                  setAccountForm({
+                    name: '',
+                    type: 'checking',
+                    balance: '',
+                    currency: 'USD',
+                  });
+                }}>
                   Cancel
                 </Button>
               </div>
@@ -404,10 +463,52 @@ const Transactions = () => {
       {/* Accounts Overview */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {accounts?.map((account) => (
-          <Card key={account.id}>
+          <Card key={account.id} className="relative group">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">{account.name}</CardTitle>
-              <CardDescription className="capitalize">{account.type}</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-sm font-medium">{account.name}</CardTitle>
+                  <CardDescription className="capitalize">{account.type}</CardDescription>
+                </div>
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => handleEditAccount(account)}
+                  >
+                    <Edit2 className="h-3 w-3" />
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Account</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete "{account.name}"? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDeleteAccount(account.id)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -496,7 +597,7 @@ const Transactions = () => {
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction
-                              onClick={() => handleDeleteTransaction(transaction.id)}
+                              onClick={() => handleDeleteTransaction(transaction)}
                               className="bg-red-500 hover:bg-red-600"
                             >
                               Delete

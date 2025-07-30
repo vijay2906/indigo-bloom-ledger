@@ -9,10 +9,14 @@ export const useDashboardData = () => {
       if (!user) throw new Error('User not authenticated');
 
       // Get accounts
-      const { data: accounts } = await supabase
+      const { data: accounts, error: accountsError } = await supabase
         .from('accounts')
         .select('*')
         .eq('is_active', true);
+
+      if (accountsError) {
+        console.error('Accounts error:', accountsError);
+      }
 
       // Get recent transactions
       const { data: recentTransactions } = await supabase
