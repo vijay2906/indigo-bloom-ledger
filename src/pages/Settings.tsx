@@ -1,4 +1,4 @@
-import { User, Bell, Shield, Palette, Download, Trash2 } from "lucide-react";
+import { User, Bell, Shield, Palette, Download, Trash2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSettings, useUpdateSettings } from "@/hooks/useSettings";
 import { currencySymbols } from "@/utils/currency";
+import { HouseholdManager } from "@/components/HouseholdManager";
 
 export default function Settings() {
   const { data: settings, isLoading } = useSettings();
@@ -157,6 +158,17 @@ export default function Settings() {
             View Login History
           </Button>
         </div>
+      </div>
+
+      {/* Household Management */}
+      <div className="finance-card p-6">
+        <div className="flex items-center space-x-3 mb-6">
+          <div className="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center">
+            <Users className="h-5 w-5 text-blue-500" />
+          </div>
+          <h3 className="text-lg font-semibold text-foreground">Family Sharing</h3>
+        </div>
+        <HouseholdManager />
       </div>
 
       {/* Data Management */}

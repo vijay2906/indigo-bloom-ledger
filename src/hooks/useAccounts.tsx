@@ -19,6 +19,7 @@ export type CreateAccountData = {
   type: 'checking' | 'savings' | 'credit' | 'cash' | 'investment';
   balance: number;
   currency?: string;
+  household_id?: string;
 };
 
 export const useAccounts = () => {
