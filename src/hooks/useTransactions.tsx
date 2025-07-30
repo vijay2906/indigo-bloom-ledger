@@ -45,6 +45,18 @@ export const useTransactions = () => {
   return useQuery({
     queryKey: ['transactions'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      // Get user's households first
+      const { data: households } = await supabase
+        .from('household_members')
+        .select('household_id')
+        .eq('user_id', user.id);
+      
+      const householdIds = households?.map(h => h.household_id) || [];
+      
+      // Fetch transactions that user owns OR belong to their households
       const { data, error } = await supabase
         .from('transactions')
         .select(`
@@ -52,6 +64,7 @@ export const useTransactions = () => {
           category:categories(name, icon, color, type),
           account:accounts(name, type)
         `)
+        .or(`user_id.eq.${user.id}${householdIds.length > 0 ? `,household_id.in.(${householdIds.join(',')})` : ''}`)
         .order('date', { ascending: false });
 
       if (error) throw error;
@@ -69,9 +82,23 @@ export const useCreateTransaction = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
+      // Check if user is part of a household and set household_id
+      const { data: householdMember } = await supabase
+        .from('household_members')
+        .select('household_id')
+        .eq('user_id', user.id)
+        .limit(1)
+        .single();
+
+      const transactionData = {
+        ...data,
+        user_id: user.id,
+        household_id: householdMember?.household_id || null
+      };
+
       const { data: result, error } = await supabase
         .from('transactions')
-        .insert([{ ...data, user_id: user.id }])
+        .insert([transactionData])
         .select()
         .single();
 
