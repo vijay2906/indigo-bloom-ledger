@@ -136,14 +136,15 @@ export const useInviteMember = () => {
       if (!user) throw new Error('User not authenticated');
 
       // Find user by email
-      const { data: profiles, error: profileError } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('user_id')
-        .eq('email', data.user_email); // Now correctly searching by email field
+        .eq('email', data.user_email)
+        .maybeSingle(); // Use maybeSingle to avoid errors when no user found
 
       if (profileError) throw profileError;
-      if (!profiles || profiles.length === 0) {
-        throw new Error('User not found');
+      if (!profile) {
+        throw new Error(`No user found with email ${data.user_email}. They need to sign up first.`);
       }
 
       // Add member to household
@@ -151,7 +152,7 @@ export const useInviteMember = () => {
         .from('household_members')
         .insert({
           household_id: data.household_id,
-          user_id: profiles[0].user_id,
+          user_id: profile.user_id,
           role: 'member',
           invited_by: user.id,
         });
