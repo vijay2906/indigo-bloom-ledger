@@ -72,8 +72,12 @@ export const useCreateHousehold = () => {
   return useMutation({
     mutationFn: async (data: CreateHouseholdData) => {
       const { data: { user } } = await supabase.auth.getUser();
+      console.log('Auth user from supabase.auth.getUser():', user);
+      
       if (!user) throw new Error('User not authenticated');
 
+      console.log('Creating household with user ID:', user.id);
+      
       // Create household
       const { data: household, error: householdError } = await supabase
         .from('households')
