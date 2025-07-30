@@ -9,6 +9,7 @@ import { useTransactions, useCreateTransaction, useUpdateTransaction, useDeleteT
 import { useAccounts, useCreateAccount, useUpdateAccount, useDeleteAccount } from "@/hooks/useAccounts";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useCategories } from "@/hooks/useCategories";
+import { useCurrency } from "@/hooks/useCurrency";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Loader2, Search, Filter, Edit2, Trash2 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -25,6 +26,7 @@ const Transactions = () => {
   const { data: transactions, isLoading } = useTransactions();
   const { data: accounts } = useAccounts();
   const { data: categories } = useCategories();
+  const { format: formatCurrencyValue } = useCurrency();
   
   const createTransaction = useCreateTransaction();
   const updateTransaction = useUpdateTransaction();
@@ -567,7 +569,7 @@ const Transactions = () => {
                       <p className={`font-semibold ${
                         transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
                       }`}>
-                        {transaction.type === 'income' ? '+' : '-'}{formatCurrency(Math.abs(Number(transaction.amount)), 'USD')}
+                        {transaction.type === 'income' ? '+' : '-'}{formatCurrencyValue(Math.abs(Number(transaction.amount)))}
                       </p>
                       <Badge variant="secondary" className="text-xs">
                         {transaction.type}
