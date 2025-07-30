@@ -88,6 +88,8 @@ export const useCreateHousehold = () => {
         .select()
         .single();
 
+      console.log('Household creation result:', { household, householdError });
+
       if (householdError) throw householdError;
 
       // Add creator as owner
