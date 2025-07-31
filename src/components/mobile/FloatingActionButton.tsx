@@ -3,7 +3,12 @@ import { Plus, Receipt, PiggyBank, Target, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+
+interface FloatingActionButtonProps {
+  onAddTransaction?: () => void;
+  onAddAccount?: () => void;
+}
 
 const quickActions = [
   { 
@@ -32,10 +37,12 @@ const quickActions = [
   },
 ];
 
-export function FloatingActionButton() {
+export function FloatingActionButton({ onAddTransaction, onAddAccount }: FloatingActionButtonProps = {}) {
   const [isExpanded, setIsExpanded] = useState(false);
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isOnTransactionsPage = location.pathname === '/transactions';
 
   if (!isMobile) return null;
 
@@ -44,7 +51,11 @@ export function FloatingActionButton() {
     
     switch (action) {
       case "transaction":
-        navigate("/transactions");
+        if (isOnTransactionsPage && onAddTransaction) {
+          onAddTransaction();
+        } else {
+          navigate("/transactions");
+        }
         break;
       case "budget":
         navigate("/budgets");
@@ -53,7 +64,11 @@ export function FloatingActionButton() {
         navigate("/goals");
         break;
       case "account":
-        navigate("/settings");
+        if (isOnTransactionsPage && onAddAccount) {
+          onAddAccount();
+        } else {
+          navigate("/settings");
+        }
         break;
     }
   };
@@ -81,7 +96,13 @@ export function FloatingActionButton() {
                     item.color,
                     "text-white hover:scale-110 transition-transform duration-200"
                   )}
-                  onClick={() => handleActionClick(item.action)}
+                  onClick={() => {
+                    // Add haptic feedback for mobile
+                    if (typeof window !== 'undefined' && 'navigator' in window && 'vibrate' in navigator) {
+                      navigator.vibrate(50);
+                    }
+                    handleActionClick(item.action);
+                  }}
                 >
                   <IconComponent className="h-5 w-5" />
                 </Button>

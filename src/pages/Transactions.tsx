@@ -15,6 +15,9 @@ import { Plus, Loader2, Search, Filter, Edit2, Trash2 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 import { formatCurrency } from "@/utils/currency";
+import { FloatingActionButton } from "@/components/mobile/FloatingActionButton";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 const Transactions = () => {
   const [showTransactionForm, setShowTransactionForm] = useState(false);
@@ -22,6 +25,7 @@ const Transactions = () => {
   const [editingTransaction, setEditingTransaction] = useState<any>(null);
   const [editingAccount, setEditingAccount] = useState<any>(null);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const { data: transactions, isLoading } = useTransactions();
   const { data: accounts } = useAccounts();
@@ -195,6 +199,13 @@ const Transactions = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-light/20 to-secondary/30">
+      {/* Custom FAB for Transactions page */}
+      <div className="block sm:hidden">
+        <FloatingActionButton 
+          onAddTransaction={() => setShowTransactionForm(true)}
+          onAddAccount={() => setShowAccountForm(true)}
+        />
+      </div>
       {/* Mobile App Header */}
       <div className="sticky top-0 z-10 bg-card/80 backdrop-blur-xl border-b border-border/50 px-4 py-4 sm:px-6">
         <div className="flex items-center justify-between">
@@ -549,7 +560,14 @@ const Transactions = () => {
           <div className="space-y-4">
             {transactions && transactions.length > 0 ? (
               transactions.map((transaction) => (
-                <div key={transaction.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div 
+                  key={transaction.id} 
+                  className={cn(
+                    "flex items-center justify-between p-4 border rounded-lg transition-all duration-200",
+                    isMobile ? "active:bg-accent/50 cursor-pointer" : "hover:bg-accent/30"
+                  )}
+                  onClick={isMobile ? () => handleEditTransaction(transaction) : undefined}
+                >
                   <div className="flex items-center space-x-4">
                     <div 
                       className="w-10 h-10 rounded-full flex items-center justify-center text-white font-medium"
@@ -575,39 +593,41 @@ const Transactions = () => {
                         {transaction.type}
                       </Badge>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEditTransaction(transaction)}
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="sm">
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Transaction</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete this transaction? This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDeleteTransaction(transaction)}
-                              className="bg-red-500 hover:bg-red-600"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
+                    {!isMobile && (
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditTransaction(transaction)}
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Transaction</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete this transaction? This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDeleteTransaction(transaction)}
+                                className="bg-red-500 hover:bg-red-600"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))
