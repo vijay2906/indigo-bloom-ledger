@@ -563,72 +563,108 @@ const Transactions = () => {
                 <div 
                   key={transaction.id} 
                   className={cn(
-                    "flex items-center justify-between p-4 border rounded-lg transition-all duration-200",
+                    "p-4 border rounded-lg transition-all duration-200",
                     isMobile ? "active:bg-accent/50 cursor-pointer" : "hover:bg-accent/30"
                   )}
                   onClick={isMobile ? () => handleEditTransaction(transaction) : undefined}
                 >
-                  <div className="flex items-center space-x-4">
-                    <div 
-                      className="w-10 h-10 rounded-full flex items-center justify-center text-white font-medium"
-                      style={{ backgroundColor: transaction.category?.color || '#8884d8' }}
-                    >
-                      {transaction.category?.name?.charAt(0) || 'T'}
-                    </div>
-                    <div>
-                      <p className="font-medium">{transaction.description}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {transaction.category?.name} • {transaction.account?.name} • {format(new Date(transaction.date), 'MMM dd, yyyy')}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <p className={`font-semibold ${
-                        transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {transaction.type === 'income' ? '+' : '-'}{formatCurrencyValue(Math.abs(Number(transaction.amount)))}
-                      </p>
-                      <Badge variant="secondary" className="text-xs">
-                        {transaction.type}
-                      </Badge>
-                    </div>
-                    {!isMobile && (
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEditTransaction(transaction)}
+                  {/* Mobile Layout */}
+                  {isMobile ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-3">
+                        <div 
+                          className="w-10 h-10 rounded-full flex items-center justify-center text-white font-medium flex-shrink-0"
+                          style={{ backgroundColor: transaction.category?.color || '#8884d8' }}
                         >
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="outline" size="sm">
-                              <Trash2 className="h-4 w-4 text-red-500" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Transaction</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to delete this transaction? This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDeleteTransaction(transaction)}
-                                className="bg-red-500 hover:bg-red-600"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                          {transaction.category?.name?.charAt(0) || 'T'}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">{transaction.description}</p>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {transaction.category?.name} • {transaction.account?.name}
+                          </p>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className={`font-semibold text-sm ${
+                            transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
+                          }`}>
+                            {transaction.type === 'income' ? '+' : '-'}{formatCurrencyValue(Math.abs(Number(transaction.amount)))}
+                          </p>
+                        </div>
                       </div>
-                    )}
-                  </div>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-muted-foreground">
+                          {format(new Date(transaction.date), 'MMM dd, yyyy')}
+                        </p>
+                        <Badge variant="secondary" className="text-xs">
+                          {transaction.type}
+                        </Badge>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Desktop Layout */
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div 
+                          className="w-10 h-10 rounded-full flex items-center justify-center text-white font-medium"
+                          style={{ backgroundColor: transaction.category?.color || '#8884d8' }}
+                        >
+                          {transaction.category?.name?.charAt(0) || 'T'}
+                        </div>
+                        <div>
+                          <p className="font-medium">{transaction.description}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {transaction.category?.name} • {transaction.account?.name} • {format(new Date(transaction.date), 'MMM dd, yyyy')}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <p className={`font-semibold ${
+                            transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
+                          }`}>
+                            {transaction.type === 'income' ? '+' : '-'}{formatCurrencyValue(Math.abs(Number(transaction.amount)))}
+                          </p>
+                          <Badge variant="secondary" className="text-xs">
+                            {transaction.type}
+                          </Badge>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditTransaction(transaction)}
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="outline" size="sm">
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Transaction</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete this transaction? This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteTransaction(transaction)}
+                                  className="bg-red-500 hover:bg-red-600"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))
             ) : (
