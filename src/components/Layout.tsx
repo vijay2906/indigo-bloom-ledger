@@ -17,6 +17,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileHeader } from "@/components/mobile/MobileHeader";
+import { BottomNavigation } from "@/components/mobile/BottomNavigation";
+import { FloatingActionButton } from "@/components/mobile/FloatingActionButton";
 import { cn } from "@/lib/utils";
 
 const navigation = [
@@ -34,6 +38,7 @@ export function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, session, loading, signOut } = useAuth();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (!loading && !session) {
@@ -60,30 +65,21 @@ export function Layout() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-light/10 to-secondary/20">
-      {/* Mobile Navigation Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-lg border-b border-border/50">
-        <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
-              <DollarSign className="h-4 w-4 text-white" />
-            </div>
-            <span className="font-semibold text-foreground">MyFinancials</span>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="rounded-full w-8 h-8 p-0"
-          >
-            {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-          </Button>
+      {/* Mobile Layout */}
+      {isMobile ? (
+        <div className="min-h-screen">
+          <MobileHeader />
+          <main className="pb-20">
+            <Outlet />
+          </main>
+          <BottomNavigation />
+          <FloatingActionButton />
         </div>
-      </div>
-
-      {/* Mobile Sidebar Overlay */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}>
-          <div className="fixed top-0 left-0 h-full w-80 bg-card/95 backdrop-blur-xl border-r border-border/50 p-6" onClick={e => e.stopPropagation()}>
+      ) : (
+        // Desktop Layout (existing)
+        <>
+          {/* Desktop Sidebar */}
+          <div className="hidden lg:block fixed left-0 top-0 h-full w-64 bg-card/95 backdrop-blur-xl border-r border-border/50 p-6">
             <div className="flex items-center gap-3 mb-8">
               <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
                 <DollarSign className="h-5 w-5 text-white" />
@@ -104,7 +100,6 @@ export function Layout() {
                         ? 'bg-primary text-white shadow-lg'
                         : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                     }`}
-                    onClick={() => setMobileMenuOpen(false)}
                   >
                     <IconComponent className="h-5 w-5" />
                     <span className="font-medium">{item.name}</span>
@@ -128,61 +123,15 @@ export function Layout() {
               </Button>
             </div>
           </div>
-        </div>
+
+          {/* Main Content */}
+          <div className="lg:ml-64">
+            <main className="min-h-screen">
+              <Outlet />
+            </main>
+          </div>
+        </>
       )}
-
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:block fixed left-0 top-0 h-full w-64 bg-card/95 backdrop-blur-xl border-r border-border/50 p-6">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
-            <DollarSign className="h-5 w-5 text-white" />
-          </div>
-          <span className="text-lg font-bold text-foreground">MyFinancials</span>
-        </div>
-        
-        <nav className="space-y-2">
-          {navigation.map((item) => {
-            const IconComponent = item.icon;
-            const isActive = location.pathname === item.href;
-            return (
-              <NavLink
-                key={item.name}
-                to={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                  isActive
-                    ? 'bg-primary text-white shadow-lg'
-                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-                }`}
-              >
-                <IconComponent className="h-5 w-5" />
-                <span className="font-medium">{item.name}</span>
-              </NavLink>
-            );
-          })}
-        </nav>
-        
-        <div className="absolute bottom-6 left-6 right-6">
-          <div className="p-4 rounded-xl bg-gradient-to-r from-primary/10 to-secondary/10 border border-border/50">
-            <p className="text-sm font-medium text-foreground">Welcome back!</p>
-            <p className="text-xs text-muted-foreground">{user?.email}</p>
-          </div>
-          <Button
-            onClick={handleSignOut}
-            variant="outline"
-            className="w-full mt-4 rounded-xl"
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            Sign Out
-          </Button>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="lg:ml-64 pt-16 lg:pt-0">
-        <main className="min-h-screen">
-          <Outlet />
-        </main>
-      </div>
     </div>
   );
 }
