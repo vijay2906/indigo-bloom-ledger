@@ -11,6 +11,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { useCategories } from "@/hooks/useCategories";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { Plus, Loader2, Search, Filter, Edit2, Trash2 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
@@ -26,6 +27,7 @@ const Transactions = () => {
   const [editingAccount, setEditingAccount] = useState<any>(null);
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const { user } = useAuth();
 
   const { data: transactions, isLoading } = useTransactions();
   const { data: accounts } = useAccounts();
@@ -80,7 +82,10 @@ const Transactions = () => {
     
     if (editingTransaction) {
       updateTransaction.mutate({ id: editingTransaction.id, ...transactionForm, amount: parseFloat(transactionForm.amount) }, {
-        onSuccess: () => {
+        onSuccess: (updatedTransaction) => {
+          // Send notification
+          sendTransactionNotification('updated', updatedTransaction as any, user?.email, user?.user_metadata?.full_name || 'User');
+          
           setTransactionForm({
             account_id: '',
             category_id: '',
@@ -97,7 +102,7 @@ const Transactions = () => {
       createTransaction.mutate({ ...transactionForm, amount: parseFloat(transactionForm.amount) }, {
         onSuccess: (newTransaction) => {
           // Send notification
-          sendTransactionNotification('created', newTransaction as any, 'user@example.com', 'User');
+          sendTransactionNotification('created', newTransaction as any, user?.email, user?.user_metadata?.full_name || 'User');
           
           setTransactionForm({
             account_id: '',
@@ -131,7 +136,7 @@ const Transactions = () => {
     deleteTransaction.mutate(transaction.id, {
       onSuccess: () => {
         // Send notification
-        sendTransactionNotification('deleted', transaction, 'user@example.com', 'User');
+        sendTransactionNotification('deleted', transaction, user?.email, user?.user_metadata?.full_name || 'User');
       },
     });
   };
