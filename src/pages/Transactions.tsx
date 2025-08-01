@@ -315,6 +315,15 @@ const Transactions = () => {
               <Plus className="h-4 w-4" />
               Add Transaction
             </Button>
+            <Button 
+              onClick={handleScanReceipt}
+              variant="outline"
+              className="gap-2"
+              disabled={isProcessing}
+            >
+              <Camera className="h-4 w-4" />
+              {isProcessing ? "Scanning..." : "Scan Receipt"}
+            </Button>
             <Button variant="outline" onClick={() => setShowAccountForm(true)} className="gap-2">
               <Plus className="h-4 w-4" />
               Add Account
