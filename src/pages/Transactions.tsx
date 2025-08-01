@@ -19,12 +19,15 @@ import { formatCurrency } from "@/utils/currency";
 import { FloatingActionButton } from "@/components/mobile/FloatingActionButton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { VoiceRecorder } from "@/components/VoiceRecorder";
+import { useVoiceTransactionParser } from "@/hooks/useVoiceTransactionParser";
 
 const Transactions = () => {
   const [showTransactionForm, setShowTransactionForm] = useState(false);
   const [showAccountForm, setShowAccountForm] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<any>(null);
   const [editingAccount, setEditingAccount] = useState<any>(null);
+  const [isRecording, setIsRecording] = useState(false);
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const { user } = useAuth();
@@ -41,6 +44,7 @@ const Transactions = () => {
   const updateAccount = useUpdateAccount();
   const deleteAccount = useDeleteAccount();
   const { sendTransactionNotification } = useNotifications();
+  const { parseTransactionFromText } = useVoiceTransactionParser();
 
   const [transactionForm, setTransactionForm] = useState({
     account_id: '',
@@ -57,6 +61,39 @@ const Transactions = () => {
     balance: '',
     currency: 'USD',
   });
+
+  const handleVoiceTranscription = async (text: string) => {
+    try {
+      // Parse the transcribed text to extract transaction details
+      const parsedData = await parseTransactionFromText(text);
+      
+      // Update form with parsed data
+      setTransactionForm(prev => ({
+        ...prev,
+        amount: parsedData.amount ? parsedData.amount.toString() : prev.amount,
+        description: parsedData.description || prev.description,
+        type: parsedData.type || prev.type,
+      }));
+      
+      // Auto-select category if it matches
+      if (parsedData.category && categories) {
+        const matchingCategory = categories.find(cat => 
+          cat.name.toLowerCase() === parsedData.category?.toLowerCase() && 
+          cat.type === (parsedData.type || transactionForm.type)
+        );
+        if (matchingCategory) {
+          setTransactionForm(prev => ({ ...prev, category_id: matchingCategory.id }));
+        }
+      }
+      
+      toast({
+        title: "Voice input processed",
+        description: "Transaction details extracted from voice",
+      });
+    } catch (error) {
+      console.error('Error processing voice input:', error);
+    }
+  };
 
   const handleTransactionSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -439,12 +476,20 @@ const Transactions = () => {
 
               <div className="space-y-2">
                 <Label>Description *</Label>
-                <Input
-                  value={transactionForm.description}
-                  onChange={(e) => setTransactionForm({ ...transactionForm, description: e.target.value })}
-                  placeholder="e.g., Grocery shopping"
-                  required
-                />
+                <div className="flex gap-2">
+                  <Input
+                    value={transactionForm.description}
+                    onChange={(e) => setTransactionForm({ ...transactionForm, description: e.target.value })}
+                    placeholder="e.g., Grocery shopping or use voice"
+                    required
+                    className="flex-1"
+                  />
+                  <VoiceRecorder
+                    onTranscription={handleVoiceTranscription}
+                    isRecording={isRecording}
+                    setIsRecording={setIsRecording}
+                  />
+                </div>
               </div>
 
               <div className="flex gap-2">
