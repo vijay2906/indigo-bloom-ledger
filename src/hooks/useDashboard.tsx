@@ -29,15 +29,14 @@ export const useDashboardData = () => {
         .order('date', { ascending: false })
         .limit(5);
 
-      // Get this month's transactions for summary
-      const startOfMonth = new Date();
-      startOfMonth.setDate(1);
-      startOfMonth.setHours(0, 0, 0, 0);
+      // Get last 30 days transactions for summary
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
       const { data: monthlyTransactions } = await supabase
         .from('transactions')
         .select('amount, type')
-        .gte('date', startOfMonth.toISOString().split('T')[0]);
+        .gte('date', thirtyDaysAgo.toISOString().split('T')[0]);
 
       // Get upcoming loan payments
       const { data: upcomingPayments } = await supabase
