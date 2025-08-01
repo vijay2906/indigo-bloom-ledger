@@ -15,9 +15,17 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Received request to extract receipt data');
+    
+    if (!openAIApiKey) {
+      console.error('OpenAI API key not configured');
+      throw new Error('OpenAI API key not configured');
+    }
+
     const { image } = await req.json();
 
     if (!image) {
+      console.error('No image data provided in request');
       throw new Error('No image data provided');
     }
 
@@ -30,7 +38,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4.1-2025-04-14',
         messages: [
           {
             role: 'system',
@@ -72,13 +80,19 @@ If any field cannot be determined, use null. For dates, convert to YYYY-MM-DD fo
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI API error:', errorText);
-      throw new Error(`OpenAI API error: ${response.status} ${errorText}`);
+      console.error('OpenAI API error:', response.status, errorText);
+      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('OpenAI response received:', data);
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error('Invalid OpenAI response structure:', data);
+      throw new Error('Invalid response from OpenAI');
+    }
+    
     const extractedText = data.choices[0].message.content;
-
     console.log('Raw extraction result:', extractedText);
 
     // Parse the JSON response
