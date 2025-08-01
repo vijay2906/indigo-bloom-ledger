@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { captureReceipt } from "@/utils/mobile";
 import { supabase } from "@/integrations/supabase/client";
+import { Capacitor } from '@capacitor/core';
 
 export type ReceiptData = {
   merchant_name?: string;
@@ -22,8 +23,16 @@ export const useReceiptScanning = () => {
   const scanReceipt = async (): Promise<ReceiptData | null> => {
     setIsProcessing(true);
     try {
-      // Capture receipt photo
-      const imageDataUrl = await captureReceipt();
+      let imageDataUrl: string | null = null;
+
+      // Check if running in native Capacitor environment
+      if (Capacitor.isNativePlatform()) {
+        // Use native camera
+        imageDataUrl = await captureReceipt();
+      } else {
+        // Fallback for web/WebView - use file input
+        imageDataUrl = await getImageFromFileInput();
+      }
       
       if (!imageDataUrl) {
         throw new Error("No image captured");
@@ -58,6 +67,38 @@ export const useReceiptScanning = () => {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  // Fallback function for web/WebView environments
+  const getImageFromFileInput = (): Promise<string | null> => {
+    return new Promise((resolve) => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.capture = 'environment'; // Request back camera on mobile browsers
+      
+      input.onchange = async (event) => {
+        const file = (event.target as HTMLInputElement).files?.[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            resolve(reader.result as string);
+          };
+          reader.onerror = () => {
+            resolve(null);
+          };
+          reader.readAsDataURL(file);
+        } else {
+          resolve(null);
+        }
+      };
+      
+      input.oncancel = () => {
+        resolve(null);
+      };
+      
+      input.click();
+    });
   };
 
   const saveReceiptData = async (transactionId: string, receiptData: ReceiptData) => {
