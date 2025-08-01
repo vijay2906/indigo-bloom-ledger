@@ -34,21 +34,29 @@ export const useDashboardData = () => {
       const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
       const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
+      console.log('Current month range:', currentMonthStart.toISOString().split('T')[0], 'to', currentMonthEnd.toISOString().split('T')[0]);
+
       const { data: currentMonthTransactions } = await supabase
         .from('transactions')
         .select('amount, type')
         .gte('date', currentMonthStart.toISOString().split('T')[0])
         .lte('date', currentMonthEnd.toISOString().split('T')[0]);
 
+      console.log('Current month transactions:', currentMonthTransactions);
+
       // Get last month transactions
       const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+
+      console.log('Last month range:', lastMonthStart.toISOString().split('T')[0], 'to', lastMonthEnd.toISOString().split('T')[0]);
 
       const { data: lastMonthTransactions } = await supabase
         .from('transactions')
         .select('amount, type')
         .gte('date', lastMonthStart.toISOString().split('T')[0])
         .lte('date', lastMonthEnd.toISOString().split('T')[0]);
+
+      console.log('Last month transactions:', lastMonthTransactions);
 
       // Get upcoming loan payments
       const { data: upcomingPayments } = await supabase
@@ -77,6 +85,14 @@ export const useDashboardData = () => {
       const lastMonthExpenses = lastMonthTransactions
         ?.filter(t => t.type === 'expense')
         .reduce((sum, t) => sum + Number(t.amount), 0) || 0;
+
+      console.log('Dashboard calculations:', {
+        currentMonthIncome,
+        currentMonthExpenses,
+        lastMonthIncome,
+        lastMonthExpenses,
+        totalBalance
+      });
 
       return {
         totalBalance,
