@@ -30,8 +30,10 @@ const Dashboard = () => {
 
   const {
     totalBalance = 0,
-    monthlyIncome = 0,
-    monthlyExpenses = 0,
+    currentMonthIncome = 0,
+    currentMonthExpenses = 0,
+    lastMonthIncome = 0,
+    lastMonthExpenses = 0,
     netWorth = 0,
     recentTransactions = [],
     upcomingPayments = [],
@@ -57,7 +59,8 @@ const Dashboard = () => {
     }, [] as Array<{ name: string; value: number; color: string }>);
 
   const monthlyData = [
-    { name: 'Monthly', income: monthlyIncome, expenses: monthlyExpenses },
+    { name: 'This Month', income: currentMonthIncome, expenses: currentMonthExpenses },
+    { name: 'Last Month', income: lastMonthIncome, expenses: lastMonthExpenses },
   ];
 
   return (
@@ -65,7 +68,7 @@ const Dashboard = () => {
       <div className="px-4 py-6 space-y-6 sm:px-6">
 
         {/* Metrics Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
           <div className="finance-card p-6 gradient-card hover:shadow-xl transition-all duration-300">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
@@ -74,7 +77,7 @@ const Dashboard = () => {
               <h3 className="font-semibold text-foreground">Net Worth</h3>
             </div>
             <p className="text-2xl font-bold text-foreground">{formatCurrency(netWorth)}</p>
-            <p className="text-sm text-muted-foreground mt-1">{netWorth > 0 ? "+12% from last month" : "Start tracking your finances"}</p>
+            <p className="text-sm text-muted-foreground mt-1">{netWorth > 0 ? "Total balance" : "Start tracking your finances"}</p>
           </div>
           
           <div className="finance-card p-6 gradient-card hover:shadow-xl transition-all duration-300">
@@ -84,7 +87,7 @@ const Dashboard = () => {
               </div>
               <h3 className="font-semibold text-foreground">Income</h3>
             </div>
-            <p className="text-2xl font-bold metric-positive">{formatCurrency(monthlyIncome)}</p>
+            <p className="text-2xl font-bold metric-positive">{formatCurrency(currentMonthIncome)}</p>
             <p className="text-sm text-muted-foreground mt-1">This month</p>
           </div>
           
@@ -95,8 +98,30 @@ const Dashboard = () => {
               </div>
               <h3 className="font-semibold text-foreground">Expenses</h3>
             </div>
-            <p className="text-2xl font-bold metric-negative">{formatCurrency(monthlyExpenses)}</p>
+            <p className="text-2xl font-bold metric-negative">{formatCurrency(currentMonthExpenses)}</p>
             <p className="text-sm text-muted-foreground mt-1">This month</p>
+          </div>
+
+          <div className="finance-card p-6 gradient-card hover:shadow-xl transition-all duration-300">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-8 h-8 rounded-lg gradient-success/80 flex items-center justify-center">
+                <TrendingUp className="h-4 w-4 text-white" />
+              </div>
+              <h3 className="font-semibold text-foreground">Income</h3>
+            </div>
+            <p className="text-2xl font-bold metric-positive">{formatCurrency(lastMonthIncome)}</p>
+            <p className="text-sm text-muted-foreground mt-1">Last month</p>
+          </div>
+          
+          <div className="finance-card p-6 gradient-card hover:shadow-xl transition-all duration-300">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-destructive/80 flex items-center justify-center">
+                <TrendingDown className="h-4 w-4 text-white" />
+              </div>
+              <h3 className="font-semibold text-foreground">Expenses</h3>
+            </div>
+            <p className="text-2xl font-bold metric-negative">{formatCurrency(lastMonthExpenses)}</p>
+            <p className="text-sm text-muted-foreground mt-1">Last month</p>
           </div>
           
           <div className="finance-card p-6 gradient-card hover:shadow-xl transition-all duration-300">
@@ -119,8 +144,8 @@ const Dashboard = () => {
                 <TrendingUp className="h-4 w-4 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-foreground">Monthly Overview</h3>
-                <p className="text-sm text-muted-foreground">Income vs Expenses this month</p>
+                <h3 className="font-semibold text-foreground">Monthly Comparison</h3>
+                <p className="text-sm text-muted-foreground">Current vs Previous month</p>
               </div>
             </div>
             <BarChart data={monthlyData} />

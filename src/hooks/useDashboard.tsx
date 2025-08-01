@@ -29,14 +29,26 @@ export const useDashboardData = () => {
         .order('date', { ascending: false })
         .limit(5);
 
-      // Get last 30 days transactions for summary
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      // Get current month transactions
+      const now = new Date();
+      const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-      const { data: monthlyTransactions } = await supabase
+      const { data: currentMonthTransactions } = await supabase
         .from('transactions')
         .select('amount, type')
-        .gte('date', thirtyDaysAgo.toISOString().split('T')[0]);
+        .gte('date', currentMonthStart.toISOString().split('T')[0])
+        .lte('date', currentMonthEnd.toISOString().split('T')[0]);
+
+      // Get last month transactions
+      const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+
+      const { data: lastMonthTransactions } = await supabase
+        .from('transactions')
+        .select('amount, type')
+        .gte('date', lastMonthStart.toISOString().split('T')[0])
+        .lte('date', lastMonthEnd.toISOString().split('T')[0]);
 
       // Get upcoming loan payments
       const { data: upcomingPayments } = await supabase
@@ -50,18 +62,28 @@ export const useDashboardData = () => {
       // Calculate totals
       const totalBalance = accounts?.reduce((sum, account) => sum + Number(account.balance), 0) || 0;
       
-      const monthlyIncome = monthlyTransactions
+      const currentMonthIncome = currentMonthTransactions
         ?.filter(t => t.type === 'income')
         .reduce((sum, t) => sum + Number(t.amount), 0) || 0;
       
-      const monthlyExpenses = monthlyTransactions
+      const currentMonthExpenses = currentMonthTransactions
+        ?.filter(t => t.type === 'expense')
+        .reduce((sum, t) => sum + Number(t.amount), 0) || 0;
+
+      const lastMonthIncome = lastMonthTransactions
+        ?.filter(t => t.type === 'income')
+        .reduce((sum, t) => sum + Number(t.amount), 0) || 0;
+      
+      const lastMonthExpenses = lastMonthTransactions
         ?.filter(t => t.type === 'expense')
         .reduce((sum, t) => sum + Number(t.amount), 0) || 0;
 
       return {
         totalBalance,
-        monthlyIncome,
-        monthlyExpenses,
+        currentMonthIncome,
+        currentMonthExpenses,
+        lastMonthIncome,
+        lastMonthExpenses,
         netWorth: totalBalance,
         recentTransactions: recentTransactions || [],
         upcomingPayments: upcomingPayments || [],
