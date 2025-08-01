@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { captureReceipt, hapticFeedback, isMobile } from "@/utils/mobile";
 import { useToast } from "@/hooks/use-toast";
+import { VoiceRecorder } from "@/components/VoiceRecorder";
+import { useVoiceTransactionParser } from "@/hooks/useVoiceTransactionParser";
 
 interface TransactionFormProps {
   type: "income" | "expense";
@@ -16,6 +18,7 @@ interface TransactionFormProps {
 
 export function TransactionForm({ type, onSubmit }: TransactionFormProps) {
   const [open, setOpen] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const [formData, setFormData] = useState({
     amount: "",
     description: "",
@@ -25,10 +28,35 @@ export function TransactionForm({ type, onSubmit }: TransactionFormProps) {
     receipt: null as string | null
   });
   const { toast } = useToast();
+  const { parseTransactionFromText } = useVoiceTransactionParser();
 
   const categories = type === "income" 
     ? ["Salary", "Freelance", "Investment", "Business", "Other"]
     : ["Food", "Housing", "Transportation", "Entertainment", "Utilities", "Healthcare", "Shopping", "Other"];
+
+  const handleVoiceTranscription = async (text: string) => {
+    try {
+      await hapticFeedback('light');
+      
+      // Parse the transcribed text to extract transaction details
+      const parsedData = await parseTransactionFromText(text);
+      
+      // Update form with parsed data
+      setFormData(prev => ({
+        ...prev,
+        amount: parsedData.amount ? parsedData.amount.toString() : prev.amount,
+        description: parsedData.description || prev.description,
+        category: parsedData.category || prev.category,
+      }));
+      
+      toast({
+        title: "Voice input processed",
+        description: "Transaction details extracted from voice",
+      });
+    } catch (error) {
+      console.error('Error processing voice input:', error);
+    }
+  };
 
   const handlePhotoCapture = async () => {
     await hapticFeedback('light');
@@ -114,13 +142,21 @@ export function TransactionForm({ type, onSubmit }: TransactionFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
-            <Input
-              id="description"
-              placeholder="Enter description"
-              value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              required
-            />
+            <div className="flex gap-2">
+              <Input
+                id="description"
+                placeholder="Enter description or use voice"
+                value={formData.description}
+                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                required
+                className="flex-1"
+              />
+              <VoiceRecorder
+                onTranscription={handleVoiceTranscription}
+                isRecording={isRecording}
+                setIsRecording={setIsRecording}
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
