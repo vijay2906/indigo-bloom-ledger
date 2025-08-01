@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Receipt, PiggyBank, Target, CreditCard } from "lucide-react";
+import { Plus, Receipt, PiggyBank, Target, CreditCard, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -8,6 +8,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 interface FloatingActionButtonProps {
   onAddTransaction?: () => void;
   onAddAccount?: () => void;
+  onScanReceipt?: () => void;
 }
 
 const quickActions = [
@@ -16,6 +17,12 @@ const quickActions = [
     icon: Receipt, 
     action: "transaction",
     color: "bg-primary"
+  },
+  { 
+    name: "Scan Receipt", 
+    icon: Camera, 
+    action: "camera",
+    color: "bg-accent"
   },
   { 
     name: "Create Budget", 
@@ -29,15 +36,9 @@ const quickActions = [
     action: "goal",
     color: "bg-warning"
   },
-  { 
-    name: "Add Account", 
-    icon: CreditCard, 
-    action: "account",
-    color: "bg-secondary"
-  },
 ];
 
-export function FloatingActionButton({ onAddTransaction, onAddAccount }: FloatingActionButtonProps = {}) {
+export function FloatingActionButton({ onAddTransaction, onAddAccount, onScanReceipt }: FloatingActionButtonProps = {}) {
   const [isExpanded, setIsExpanded] = useState(false);
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -57,18 +58,18 @@ export function FloatingActionButton({ onAddTransaction, onAddAccount }: Floatin
           navigate("/transactions");
         }
         break;
+      case "camera":
+        if (isOnTransactionsPage && onScanReceipt) {
+          onScanReceipt();
+        } else {
+          navigate("/transactions");
+        }
+        break;
       case "budget":
         navigate("/budgets");
         break;
       case "goal":
         navigate("/goals");
-        break;
-      case "account":
-        if (isOnTransactionsPage && onAddAccount) {
-          onAddAccount();
-        } else {
-          navigate("/settings");
-        }
         break;
     }
   };

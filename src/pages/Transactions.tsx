@@ -28,6 +28,25 @@ import { Camera } from "lucide-react";
 
 const Transactions = () => {
   const [showTransactionForm, setShowTransactionForm] = useState(false);
+  
+  const handleScanReceipt = async () => {
+    try {
+      const receiptData = await scanReceipt();
+      if (receiptData) {
+        // Auto-fill form with receipt data
+        setTransactionForm(prev => ({
+          ...prev,
+          amount: receiptData.total_amount?.toString() || prev.amount,
+          description: receiptData.merchant_name || prev.description,
+          date: receiptData.transaction_date || prev.date,
+          type: 'expense',
+        }));
+        setShowTransactionForm(true);
+      }
+    } catch (error) {
+      console.error('Receipt scanning failed:', error);
+    }
+  };
   const [showAccountForm, setShowAccountForm] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<any>(null);
   const [editingAccount, setEditingAccount] = useState<any>(null);
@@ -49,7 +68,7 @@ const Transactions = () => {
   const deleteAccount = useDeleteAccount();
   const { sendTransactionNotification } = useNotifications();
   const { parseTransactionFromText } = useVoiceTransactionParser();
-  const { scanReceipt, saveReceiptData, isProcessing } = useReceiptScanning();
+  const { scanReceipt, isProcessing } = useReceiptScanning();
 
   const [transactionForm, setTransactionForm] = useState({
     account_id: '',
@@ -100,18 +119,6 @@ const Transactions = () => {
     }
   };
 
-  const handleReceiptScan = async () => {
-    const receiptData = await scanReceipt();
-    if (receiptData) {
-      // Auto-fill form with receipt data
-      setTransactionForm(prev => ({
-        ...prev,
-        amount: receiptData.total_amount?.toString() || prev.amount,
-        description: receiptData.merchant_name || prev.description,
-        date: receiptData.transaction_date || prev.date,
-      }));
-    }
-  };
 
   const handleTransactionSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -264,6 +271,7 @@ const Transactions = () => {
         <FloatingActionButton 
           onAddTransaction={() => setShowTransactionForm(true)}
           onAddAccount={() => setShowAccountForm(true)}
+          onScanReceipt={handleScanReceipt}
         />
       </div>
       {/* Mobile App Header */}
