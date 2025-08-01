@@ -14,6 +14,7 @@ import {
   User,
   DollarSign
 } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
@@ -80,11 +81,14 @@ export function Layout() {
         <>
           {/* Desktop Sidebar */}
           <div className="hidden lg:block fixed left-0 top-0 h-full w-64 bg-card/95 backdrop-blur-xl border-r border-border/50 p-6">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
-                <DollarSign className="h-5 w-5 text-white" />
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
+                  <DollarSign className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-lg font-bold text-foreground">MyFinancials</span>
               </div>
-              <span className="text-lg font-bold text-foreground">MyFinancials</span>
+              <ThemeToggle />
             </div>
             
             <nav className="space-y-2">

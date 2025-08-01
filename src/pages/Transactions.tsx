@@ -21,6 +21,10 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { useVoiceTransactionParser } from "@/hooks/useVoiceTransactionParser";
+import { RecurringTransactionForm } from "@/components/RecurringTransactionForm";
+import { BillReminderForm } from "@/components/BillReminderForm";
+import { useReceiptScanning } from "@/hooks/useReceiptScanning";
+import { Camera } from "lucide-react";
 
 const Transactions = () => {
   const [showTransactionForm, setShowTransactionForm] = useState(false);
@@ -45,6 +49,7 @@ const Transactions = () => {
   const deleteAccount = useDeleteAccount();
   const { sendTransactionNotification } = useNotifications();
   const { parseTransactionFromText } = useVoiceTransactionParser();
+  const { scanReceipt, saveReceiptData, isProcessing } = useReceiptScanning();
 
   const [transactionForm, setTransactionForm] = useState({
     account_id: '',
@@ -92,6 +97,19 @@ const Transactions = () => {
       });
     } catch (error) {
       console.error('Error processing voice input:', error);
+    }
+  };
+
+  const handleReceiptScan = async () => {
+    const receiptData = await scanReceipt();
+    if (receiptData) {
+      // Auto-fill form with receipt data
+      setTransactionForm(prev => ({
+        ...prev,
+        amount: receiptData.total_amount?.toString() || prev.amount,
+        description: receiptData.merchant_name || prev.description,
+        date: receiptData.transaction_date || prev.date,
+      }));
     }
   };
 
@@ -281,6 +299,22 @@ const Transactions = () => {
       </div>
 
       <div className="px-4 py-6 space-y-6 sm:px-6">
+        
+        {/* Feature Buttons - Desktop Only */}
+        {!isMobile && (
+          <div className="flex flex-wrap gap-4 mb-6">
+            <Button onClick={() => setShowTransactionForm(true)} className="gap-2">
+              <Plus className="h-4 w-4" />
+              Add Transaction
+            </Button>
+            <Button variant="outline" onClick={() => setShowAccountForm(true)} className="gap-2">
+              <Plus className="h-4 w-4" />
+              Add Account
+            </Button>
+            <RecurringTransactionForm />
+            <BillReminderForm />
+          </div>
+        )}
 
       {/* Add Account Form */}
       {showAccountForm && (
