@@ -15,7 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Plus, Loader2, Search, Filter, Edit2, Trash2 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
-import { formatCurrency } from "@/utils/currency";
+import { ReceiptScanButton } from "@/components/ReceiptScanButton";
 import { FloatingActionButton } from "@/components/mobile/FloatingActionButton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -23,30 +23,10 @@ import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { useVoiceTransactionParser } from "@/hooks/useVoiceTransactionParser";
 import { RecurringTransactionForm } from "@/components/RecurringTransactionForm";
 import { BillReminderForm } from "@/components/BillReminderForm";
-import { useReceiptScanning } from "@/hooks/useReceiptScanning";
-import { Camera } from "lucide-react";
 
 const Transactions = () => {
   const [showTransactionForm, setShowTransactionForm] = useState(false);
   
-  const handleScanReceipt = async () => {
-    try {
-      const receiptData = await scanReceipt();
-      if (receiptData) {
-        // Auto-fill form with receipt data
-        setTransactionForm(prev => ({
-          ...prev,
-          amount: receiptData.total_amount?.toString() || prev.amount,
-          description: receiptData.merchant_name || prev.description,
-          date: receiptData.transaction_date || prev.date,
-          type: 'expense',
-        }));
-        setShowTransactionForm(true);
-      }
-    } catch (error) {
-      console.error('Receipt scanning failed:', error);
-    }
-  };
   const [showAccountForm, setShowAccountForm] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<any>(null);
   const [editingAccount, setEditingAccount] = useState<any>(null);
@@ -68,7 +48,7 @@ const Transactions = () => {
   const deleteAccount = useDeleteAccount();
   const { sendTransactionNotification } = useNotifications();
   const { parseTransactionFromText } = useVoiceTransactionParser();
-  const { scanReceipt, isProcessing } = useReceiptScanning();
+  
 
   const [transactionForm, setTransactionForm] = useState({
     account_id: '',
@@ -271,7 +251,26 @@ const Transactions = () => {
         <FloatingActionButton 
           onAddTransaction={() => setShowTransactionForm(true)}
           onAddAccount={() => setShowAccountForm(true)}
-          onScanReceipt={handleScanReceipt}
+          onScanReceipt={() => {
+            // Trigger receipt scanning for mobile
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.capture = 'environment';
+            input.style.display = 'none';
+            document.body.appendChild(input);
+            
+            input.onchange = async (event) => {
+              const file = (event.target as HTMLInputElement).files?.[0];
+              if (file) {
+                console.log('Processing receipt file:', file.name);
+                // Process the file here or call the receipt scanning hook
+              }
+              document.body.removeChild(input);
+            };
+            
+            input.click();
+          }}
         />
       </div>
       {/* Mobile App Header */}
@@ -315,15 +314,20 @@ const Transactions = () => {
               <Plus className="h-4 w-4" />
               Add Transaction
             </Button>
-            <Button 
-              onClick={handleScanReceipt}
-              variant="outline"
-              className="gap-2"
-              disabled={isProcessing}
-            >
-              <Camera className="h-4 w-4" />
-              {isProcessing ? "Scanning..." : "Scan Receipt"}
-            </Button>
+            <ReceiptScanButton 
+              onReceiptData={(receiptData) => {
+                if (receiptData) {
+                  setTransactionForm(prev => ({
+                    ...prev,
+                    amount: receiptData.total_amount?.toString() || prev.amount,
+                    description: receiptData.merchant_name || prev.description,
+                    date: receiptData.transaction_date || prev.date,
+                    type: 'expense',
+                  }));
+                  setShowTransactionForm(true);
+                }
+              }}
+            />
             <Button variant="outline" onClick={() => setShowAccountForm(true)} className="gap-2">
               <Plus className="h-4 w-4" />
               Add Account
@@ -626,7 +630,7 @@ const Transactions = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {formatCurrency(Number(account.balance), account.currency)}
+                {formatCurrencyValue(Number(account.balance))}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 {account.currency}

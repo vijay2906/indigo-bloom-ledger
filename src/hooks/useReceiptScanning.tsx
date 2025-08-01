@@ -72,32 +72,70 @@ export const useReceiptScanning = () => {
   // Fallback function for web/WebView environments
   const getImageFromFileInput = (): Promise<string | null> => {
     return new Promise((resolve) => {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = 'image/*';
-      input.capture = 'environment'; // Request back camera on mobile browsers
-      
-      input.onchange = async (event) => {
-        const file = (event.target as HTMLInputElement).files?.[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = () => {
-            resolve(reader.result as string);
-          };
-          reader.onerror = () => {
+      try {
+        console.log('Creating file input for WebView...');
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.capture = 'environment'; // Request back camera on mobile browsers
+        input.style.display = 'none';
+        document.body.appendChild(input);
+        
+        let resolved = false;
+        
+        input.onchange = async (event) => {
+          console.log('File input changed:', event);
+          if (resolved) return;
+          resolved = true;
+          
+          const file = (event.target as HTMLInputElement).files?.[0];
+          if (file) {
+            console.log('File selected:', file.name, file.type, file.size);
+            const reader = new FileReader();
+            reader.onload = () => {
+              document.body.removeChild(input);
+              resolve(reader.result as string);
+            };
+            reader.onerror = () => {
+              console.error('FileReader error');
+              document.body.removeChild(input);
+              resolve(null);
+            };
+            reader.readAsDataURL(file);
+          } else {
+            console.log('No file selected');
+            document.body.removeChild(input);
             resolve(null);
-          };
-          reader.readAsDataURL(file);
-        } else {
+          }
+        };
+        
+        input.oncancel = () => {
+          console.log('File input cancelled');
+          if (resolved) return;
+          resolved = true;
+          document.body.removeChild(input);
           resolve(null);
-        }
-      };
-      
-      input.oncancel = () => {
+        };
+        
+        // Fallback timeout
+        setTimeout(() => {
+          if (!resolved) {
+            console.log('File input timeout');
+            resolved = true;
+            if (document.body.contains(input)) {
+              document.body.removeChild(input);
+            }
+            resolve(null);
+          }
+        }, 30000);
+        
+        console.log('Triggering file input click...');
+        input.click();
+        
+      } catch (error) {
+        console.error('Error creating file input:', error);
         resolve(null);
-      };
-      
-      input.click();
+      }
     });
   };
 
