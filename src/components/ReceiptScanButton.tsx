@@ -35,22 +35,46 @@ export function ReceiptScanButton({
         const imageDataUrl = reader.result as string;
         if (!imageDataUrl) return;
 
-        // Extract base64 data
-        const base64Data = imageDataUrl.split(',')[1];
+        try {
+          // Extract base64 data
+          const base64Data = imageDataUrl.split(',')[1];
+          console.log('Calling edge function with image data...');
 
-        // Call edge function to extract receipt data
-        const { supabase } = await import("@/integrations/supabase/client");
-        const { data, error } = await supabase.functions.invoke('extract-receipt-data', {
-          body: { image: base64Data }
-        });
+          // Call edge function to extract receipt data
+          const { supabase } = await import("@/integrations/supabase/client");
+          const { data, error } = await supabase.functions.invoke('extract-receipt-data', {
+            body: { image: base64Data }
+          });
 
-        if (error) {
-          console.error('Receipt extraction error:', error);
-          return;
+          console.log('Edge function response:', { data, error });
+
+          if (error) {
+            console.error('Receipt extraction error:', error);
+            
+            // Show user-friendly error
+            const { useToast } = await import("@/hooks/use-toast");
+            const { toast } = useToast();
+            toast({
+              variant: "destructive",
+              title: "Receipt scanning failed",
+              description: "Please check if OpenAI API key is configured in Supabase.",
+            });
+            return;
+          }
+
+          console.log('Receipt data extracted successfully:', data);
+          onReceiptData?.(data.receiptData);
+          
+        } catch (error) {
+          console.error('Error processing receipt:', error);
+          const { useToast } = await import("@/hooks/use-toast");
+          const { toast } = useToast();
+          toast({
+            variant: "destructive",
+            title: "Error processing receipt",
+            description: "An unexpected error occurred while processing the receipt.",
+          });
         }
-
-        console.log('Receipt data extracted:', data);
-        onReceiptData?.(data.receiptData);
       };
       
       reader.readAsDataURL(file);
