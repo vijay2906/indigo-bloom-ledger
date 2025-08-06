@@ -14,7 +14,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { format } from "date-fns";
 
 const Loans = () => {
-  const [showLoanForm, setShowLoanForm] = useState(false);
+  const [showLoanForm, setShowLoanForm] = useState(true);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [editingLoan, setEditingLoan] = useState<any>(null);
   const { toast } = useToast();
@@ -27,12 +27,12 @@ const Loans = () => {
   const createPayment = useCreateLoanPayment();
 
   const [loanForm, setLoanForm] = useState({
-    name: '',
+    name: 'Personal Loan Tele-Binding',
     type: 'personal' as 'personal' | 'home' | 'auto' | 'student' | 'business',
-    principal_amount: '',
-    interest_rate: '',
-    tenure_months: '',
-    start_date: new Date().toISOString().split('T')[0],
+    principal_amount: '541272',
+    interest_rate: '19',
+    tenure_months: '48',
+    start_date: '2025-01-22',
   });
 
   const [paymentForm, setPaymentForm] = useState({
