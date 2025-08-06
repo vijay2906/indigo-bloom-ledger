@@ -87,8 +87,8 @@ export function ReceiptScanButton({
   };
 
   const handleClick = () => {
-    if (!isNativePlatform && fileInputRef.current) {
-      // For WebView, use the visible file input
+    if (fileInputRef.current) {
+      // Always use file input for web platforms (including Flutter web)
       fileInputRef.current.click();
     }
   };
@@ -106,17 +106,16 @@ export function ReceiptScanButton({
         {isProcessing ? "Scanning..." : "Scan Receipt"}
       </Button>
       
-      {/* Visible file input for WebView compatibility */}
-      {!isNativePlatform && (
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          onChange={handleFileChange}
-          style={{ display: 'none' }}
-        />
-      )}
+      {/* File input for web compatibility (including Flutter web) */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*,image/jpeg,image/png,image/webp"
+        capture="environment"
+        onChange={handleFileChange}
+        style={{ display: 'none' }}
+        multiple={false}
+      />
     </>
   );
 }
