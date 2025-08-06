@@ -61,6 +61,65 @@ export type Database = {
           },
         ]
       }
+      bill_reminders: {
+        Row: {
+          amount: number | null
+          category_id: string | null
+          created_at: string
+          description: string | null
+          due_date: string
+          household_id: string | null
+          id: string
+          is_completed: boolean
+          is_recurring: boolean
+          recurring_frequency: string | null
+          reminder_days_before: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number | null
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          due_date: string
+          household_id?: string | null
+          id?: string
+          is_completed?: boolean
+          is_recurring?: boolean
+          recurring_frequency?: string | null
+          reminder_days_before?: number
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number | null
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string
+          household_id?: string | null
+          id?: string
+          is_completed?: boolean
+          is_recurring?: boolean
+          recurring_frequency?: string | null
+          reminder_days_before?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bill_reminders_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       budgets: {
         Row: {
           amount: number
@@ -457,6 +516,122 @@ export type Database = {
         }
         Relationships: []
       }
+      receipt_data: {
+        Row: {
+          created_at: string
+          extracted_data: Json | null
+          id: string
+          image_path: string | null
+          items: Json | null
+          merchant_name: string | null
+          total_amount: number | null
+          transaction_date: string | null
+          transaction_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          extracted_data?: Json | null
+          id?: string
+          image_path?: string | null
+          items?: Json | null
+          merchant_name?: string | null
+          total_amount?: number | null
+          transaction_date?: string | null
+          transaction_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          extracted_data?: Json | null
+          id?: string
+          image_path?: string | null
+          items?: Json | null
+          merchant_name?: string | null
+          total_amount?: number | null
+          transaction_date?: string | null
+          transaction_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receipt_data_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recurring_transactions: {
+        Row: {
+          account_id: string
+          amount: number
+          category_id: string | null
+          created_at: string
+          description: string
+          end_date: string | null
+          frequency: string
+          household_id: string | null
+          id: string
+          is_active: boolean
+          next_execution_date: string
+          start_date: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          amount: number
+          category_id?: string | null
+          created_at?: string
+          description: string
+          end_date?: string | null
+          frequency: string
+          household_id?: string | null
+          id?: string
+          is_active?: boolean
+          next_execution_date: string
+          start_date: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          amount?: number
+          category_id?: string | null
+          created_at?: string
+          description?: string
+          end_date?: string | null
+          frequency?: string
+          household_id?: string | null
+          id?: string
+          is_active?: boolean
+          next_execution_date?: string
+          start_date?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recurring_transactions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_transactions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transactions: {
         Row: {
           account_id: string
@@ -580,6 +755,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_next_execution_date: {
+        Args: { input_date: string; frequency_type: string }
+        Returns: string
+      }
       get_user_households: {
         Args: { user_uuid: string }
         Returns: {
