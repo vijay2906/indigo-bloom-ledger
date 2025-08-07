@@ -20,7 +20,13 @@ export const useCategories = () => {
         .order('name');
 
       if (error) throw error;
-      return data as Category[];
+      
+      // Ensure unique categories as safeguard
+      const uniqueCategories = data?.filter((category, index, self) => 
+        index === self.findIndex(c => c.name === category.name)
+      ) || [];
+      
+      return uniqueCategories as Category[];
     },
   });
 };
