@@ -255,14 +255,39 @@ export const useCreateLoanPayment = () => {
         })
         .eq('id', paymentData.loan_id);
 
+      // Get the first active account and loan repayment category
+      const [{ data: accounts }, { data: categories }] = await Promise.all([
+        supabase.from('accounts').select('id').eq('is_active', true).limit(1),
+        supabase.from('categories').select('id').eq('name', 'Loan Repayment').eq('type', 'expense').limit(1)
+      ]);
+
+      // Create corresponding expense transaction
+      if (accounts && accounts.length > 0 && categories && categories.length > 0) {
+        await supabase
+          .from('transactions')
+          .insert({
+            user_id: user.id,
+            account_id: accounts[0].id,
+            category_id: categories[0].id,
+            amount: paymentData.amount,
+            type: 'expense',
+            description: `${loan.name} - Payment`,
+            date: paymentData.payment_date,
+            notes: `Principal: ₹${Math.max(0, principalComponent).toFixed(2)}, Interest: ₹${Math.min(paymentData.amount, interestComponent).toFixed(2)}`,
+            household_id: loan.household_id,
+          });
+      }
+
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['loans'] });
       queryClient.invalidateQueries({ queryKey: ['loan-payments'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       toast({
         title: "Success",
-        description: "Payment recorded successfully",
+        description: "Payment recorded successfully and added to expenses",
       });
     },
     onError: (error) => {
