@@ -67,8 +67,15 @@ export const useDashboardData = () => {
         .order('next_emi_date')
         .limit(3);
 
+      // Get active loans for net worth calculation
+      const { data: activeLoans } = await supabase
+        .from('loans')
+        .select('remaining_balance')
+        .eq('is_active', true);
+
       // Calculate totals
       const totalBalance = accounts?.reduce((sum, account) => sum + Number(account.balance), 0) || 0;
+      const totalLoanBalance = activeLoans?.reduce((sum, loan) => sum + Number(loan.remaining_balance), 0) || 0;
       
       const currentMonthIncome = currentMonthTransactions
         ?.filter(t => t.type === 'income')
@@ -86,12 +93,17 @@ export const useDashboardData = () => {
         ?.filter(t => t.type === 'expense')
         .reduce((sum, t) => sum + Number(t.amount), 0) || 0;
 
+      // Net Worth = Total Assets - Total Liabilities
+      const netWorth = totalBalance - totalLoanBalance;
+
       console.log('Dashboard calculations:', {
         currentMonthIncome,
         currentMonthExpenses,
         lastMonthIncome,
         lastMonthExpenses,
-        totalBalance
+        totalBalance,
+        totalLoanBalance,
+        netWorth
       });
 
       return {
@@ -100,7 +112,7 @@ export const useDashboardData = () => {
         currentMonthExpenses,
         lastMonthIncome,
         lastMonthExpenses,
-        netWorth: totalBalance,
+        netWorth,
         recentTransactions: recentTransactions || [],
         upcomingPayments: upcomingPayments || [],
         accounts: accounts || [],

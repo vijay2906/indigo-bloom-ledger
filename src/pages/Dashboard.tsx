@@ -76,8 +76,10 @@ const Dashboard = () => {
               </div>
               <h3 className="font-semibold text-foreground">Net Worth</h3>
             </div>
-            <p className="text-2xl font-bold text-foreground">{formatCurrency(netWorth)}</p>
-            <p className="text-sm text-muted-foreground mt-1">{netWorth > 0 ? "Total balance" : "Start tracking your finances"}</p>
+            <p className={`text-2xl font-bold ${netWorth >= 0 ? 'metric-positive' : 'metric-negative'}`}>
+              {netWorth >= 0 ? formatCurrency(netWorth) : `-${formatCurrency(Math.abs(netWorth))}`}
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">{netWorth > 0 ? "Assets minus liabilities" : "Start tracking your finances"}</p>
           </div>
           
           <div className="finance-card p-6 gradient-card hover:shadow-xl transition-all duration-300">
