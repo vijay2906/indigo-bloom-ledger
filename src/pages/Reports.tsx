@@ -65,7 +65,9 @@ export default function Reports() {
         </div>
         <div className="finance-card p-6">
           <h3 className="text-lg font-semibold text-foreground mb-2">Net Savings</h3>
-          <p className="text-3xl font-bold metric-positive">{format(reportData.netSavings)}</p>
+          <p className={`text-3xl font-bold ${reportData.netSavings >= 0 ? 'metric-positive' : 'metric-negative'}`}>
+            {reportData.netSavings >= 0 ? format(reportData.netSavings) : `-${format(Math.abs(reportData.netSavings))}`}
+          </p>
           <p className="text-sm metric-positive mt-1">
             {reportData.savingsGrowth >= 0 ? '+' : ''}{reportData.savingsGrowth.toFixed(1)}% vs last year
           </p>

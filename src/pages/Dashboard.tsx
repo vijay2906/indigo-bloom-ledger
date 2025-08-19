@@ -131,7 +131,9 @@ const Dashboard = () => {
               </div>
               <h3 className="font-semibold text-foreground">Balance</h3>
             </div>
-            <p className="text-2xl font-bold text-foreground">{formatCurrency(totalBalance)}</p>
+            <p className={`text-2xl font-bold ${totalBalance >= 0 ? 'metric-positive' : 'metric-negative'}`}>
+              {totalBalance >= 0 ? formatCurrency(totalBalance) : `-${formatCurrency(Math.abs(totalBalance))}`}
+            </p>
             <p className="text-sm text-muted-foreground mt-1">All accounts</p>
           </div>
         </div>
