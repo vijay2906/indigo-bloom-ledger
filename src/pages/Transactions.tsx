@@ -5,14 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { useTransactions, useCreateTransaction, useUpdateTransaction, useDeleteTransaction } from "@/hooks/useTransactions";
+import { useTransactions, useCreateTransaction, useUpdateTransaction, useDeleteTransaction, type TransactionFilters } from "@/hooks/useTransactions";
 import { useAccounts, useCreateAccount, useUpdateAccount, useDeleteAccount } from "@/hooks/useAccounts";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useCategories } from "@/hooks/useCategories";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Plus, Loader2, Search, Filter, Edit2, Trash2 } from "lucide-react";
+import { Plus, Loader2, Search, Filter, Edit2, Trash2, X, Calendar, DollarSign, TrendingUp, TrendingDown } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 import { ReceiptScanButton } from "@/components/ReceiptScanButton";
@@ -23,19 +23,24 @@ import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { useVoiceTransactionParser } from "@/hooks/useVoiceTransactionParser";
 import { RecurringTransactionForm } from "@/components/RecurringTransactionForm";
 import { BillReminderForm } from "@/components/BillReminderForm";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const Transactions = () => {
   const [showTransactionForm, setShowTransactionForm] = useState(false);
-  
   const [showAccountForm, setShowAccountForm] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<any>(null);
   const [editingAccount, setEditingAccount] = useState<any>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  
+  // Filter states
+  const [filters, setFilters] = useState<TransactionFilters>({});
+  
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const { user } = useAuth();
 
-  const { data: transactions, isLoading } = useTransactions();
+  const { data: transactions, isLoading } = useTransactions(filters);
   const { data: accounts } = useAccounts();
   const { data: categories } = useCategories();
   const { format: formatCurrencyValue } = useCurrency();
@@ -307,6 +312,166 @@ const Transactions = () => {
 
       <div className="px-4 py-6 space-y-6 sm:px-6">
         
+        {/* Search and Filters */}
+        <Card className="finance-card-glass">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Search className="h-5 w-5 text-primary" />
+                <CardTitle className="text-lg">Search & Filter</CardTitle>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowFilters(!showFilters)}
+                className="gap-2"
+              >
+                <Filter className="h-4 w-4" />
+                {showFilters ? 'Hide' : 'Filters'}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Search Bar */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search transactions, categories, accounts..."
+                value={filters.search || ''}
+                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                className="pl-10"
+              />
+            </div>
+
+            {/* Filters */}
+            <Collapsible open={showFilters}>
+              <CollapsibleContent className="space-y-4">
+                {/* Quick Filter Chips */}
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant={filters.type === 'income' ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setFilters({ ...filters, type: filters.type === 'income' ? undefined : 'income' })}
+                    className="gap-2"
+                  >
+                    <TrendingUp className="h-3 w-3" />
+                    Income
+                  </Button>
+                  <Button
+                    variant={filters.type === 'expense' ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setFilters({ ...filters, type: filters.type === 'expense' ? undefined : 'expense' })}
+                    className="gap-2"
+                  >
+                    <TrendingDown className="h-3 w-3" />
+                    Expense
+                  </Button>
+                  {Object.keys(filters).some(key => key !== 'search' && filters[key as keyof TransactionFilters]) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setFilters({ search: filters.search })}
+                      className="gap-2 text-destructive"
+                    >
+                      <X className="h-3 w-3" />
+                      Clear
+                    </Button>
+                  )}
+                </div>
+
+                {/* Detailed Filters */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* Category Filter */}
+                  <div className="space-y-2">
+                    <Label>Category</Label>
+                    <Select
+                      value={filters.category_id || 'all'}
+                      onValueChange={(value) => setFilters({ ...filters, category_id: value === 'all' ? undefined : value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="All categories" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Categories</SelectItem>
+                        {categories?.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.icon} {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Account Filter */}
+                  <div className="space-y-2">
+                    <Label>Account</Label>
+                    <Select
+                      value={filters.account_id || 'all'}
+                      onValueChange={(value) => setFilters({ ...filters, account_id: value === 'all' ? undefined : value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="All accounts" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Accounts</SelectItem>
+                        {accounts?.map((account) => (
+                          <SelectItem key={account.id} value={account.id}>
+                            {account.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Date From */}
+                  <div className="space-y-2">
+                    <Label>From Date</Label>
+                    <Input
+                      type="date"
+                      value={filters.date_from || ''}
+                      onChange={(e) => setFilters({ ...filters, date_from: e.target.value })}
+                    />
+                  </div>
+
+                  {/* Date To */}
+                  <div className="space-y-2">
+                    <Label>To Date</Label>
+                    <Input
+                      type="date"
+                      value={filters.date_to || ''}
+                      onChange={(e) => setFilters({ ...filters, date_to: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                {/* Amount Range */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Min Amount</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      value={filters.amount_min || ''}
+                      onChange={(e) => setFilters({ ...filters, amount_min: e.target.value ? parseFloat(e.target.value) : undefined })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Max Amount</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="999999.99"
+                      value={filters.amount_max || ''}
+                      onChange={(e) => setFilters({ ...filters, amount_max: e.target.value ? parseFloat(e.target.value) : undefined })}
+                    />
+                  </div>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          </CardContent>
+        </Card>
+
         {/* Feature Buttons - Desktop Only */}
         {!isMobile && (
           <div className="flex flex-wrap gap-4 mb-6">

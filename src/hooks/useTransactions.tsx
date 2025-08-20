@@ -41,9 +41,20 @@ export type CreateTransactionData = {
   recurring_frequency?: string;
 };
 
-export const useTransactions = () => {
+export type TransactionFilters = {
+  search?: string;
+  category_id?: string;
+  account_id?: string;
+  type?: 'income' | 'expense' | 'transfer';
+  date_from?: string;
+  date_to?: string;
+  amount_min?: number;
+  amount_max?: number;
+};
+
+export const useTransactions = (filters?: TransactionFilters) => {
   return useQuery({
-    queryKey: ['transactions'],
+    queryKey: ['transactions', filters],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
@@ -56,19 +67,58 @@ export const useTransactions = () => {
       
       const householdIds = households?.map(h => h.household_id) || [];
       
-      // Fetch transactions that user owns OR belong to their households
-      const { data, error } = await supabase
+      // Build query with filters
+      let query = supabase
         .from('transactions')
         .select(`
           *,
           category:categories(name, icon, color, type),
           account:accounts(name, type)
         `)
-        .or(`user_id.eq.${user.id}${householdIds.length > 0 ? `,household_id.in.(${householdIds.join(',')})` : ''}`)
-        .order('date', { ascending: false });
+        .or(`user_id.eq.${user.id}${householdIds.length > 0 ? `,household_id.in.(${householdIds.join(',')})` : ''}`);
 
+      // Apply filters
+      if (filters?.category_id) {
+        query = query.eq('category_id', filters.category_id);
+      }
+      if (filters?.account_id) {
+        query = query.eq('account_id', filters.account_id);
+      }
+      if (filters?.type) {
+        query = query.eq('type', filters.type);
+      }
+      if (filters?.date_from) {
+        query = query.gte('date', filters.date_from);
+      }
+      if (filters?.date_to) {
+        query = query.lte('date', filters.date_to);
+      }
+      if (filters?.amount_min !== undefined) {
+        query = query.gte('amount', filters.amount_min);
+      }
+      if (filters?.amount_max !== undefined) {
+        query = query.lte('amount', filters.amount_max);
+      }
+
+      query = query.order('date', { ascending: false });
+
+      const { data, error } = await query;
       if (error) throw error;
-      return data as Transaction[];
+      
+      let filteredData = data as Transaction[];
+
+      // Apply text search filter (client-side for better performance)
+      if (filters?.search) {
+        const searchTerm = filters.search.toLowerCase();
+        filteredData = filteredData.filter(transaction =>
+          transaction.description.toLowerCase().includes(searchTerm) ||
+          transaction.notes?.toLowerCase().includes(searchTerm) ||
+          transaction.category?.name.toLowerCase().includes(searchTerm) ||
+          transaction.account?.name.toLowerCase().includes(searchTerm)
+        );
+      }
+
+      return filteredData;
     },
   });
 };
