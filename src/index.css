@@ -2,72 +2,85 @@
 @tailwind components;
 @tailwind utilities;
 
-/* MyFinancials Design System - Professional Finance App */
+/* MyFinancials Design System - Modern Rich Finance App */
 
 @layer base {
   :root {
-    /* Core backgrounds */
-    --background: 250 100% 99%;
-    --foreground: 224 20% 12%;
+    /* Core backgrounds with subtle tints */
+    --background: 225 15% 98%;
+    --foreground: 225 25% 8%;
 
-    /* Card system */
+    /* Card system with glass morphism */
     --card: 0 0% 100%;
-    --card-foreground: 224 20% 12%;
+    --card-foreground: 225 25% 8%;
+    --card-glass: 225 30% 100% / 0.7;
 
     /* Popover system */
     --popover: 0 0% 100%;
-    --popover-foreground: 224 20% 12%;
+    --popover-foreground: 225 25% 8%;
 
-    /* Primary brand - Indigo */
-    --primary: 238 84% 58%;
+    /* Rich Primary brand - Modern Blue/Purple */
+    --primary: 235 89% 64%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 238 100% 95%;
-    --primary-dark: 238 84% 48%;
+    --primary-light: 235 100% 96%;
+    --primary-dark: 235 89% 54%;
+    --primary-glow: 235 89% 84%;
 
-    /* Secondary - Light indigo */
-    --secondary: 240 100% 98%;
-    --secondary-foreground: 238 84% 58%;
+    /* Secondary - Rich purple tint */
+    --secondary: 245 20% 96%;
+    --secondary-foreground: 235 89% 64%;
 
-    /* Success/Income - Emerald */
-    --success: 160 84% 39%;
+    /* Success/Income - Vibrant Green */
+    --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
-    --success-light: 160 100% 95%;
+    --success-light: 142 76% 94%;
+    --success-glow: 142 76% 76%;
 
-    /* Warning/Pending - Amber */
-    --warning: 43 96% 56%;
-    --warning-foreground: 26 83% 14%;
-    --warning-light: 43 100% 95%;
+    /* Warning/Pending - Rich Orange */
+    --warning: 32 95% 44%;
+    --warning-foreground: 32 80% 8%;
+    --warning-light: 32 95% 94%;
+    --warning-glow: 32 95% 74%;
 
-    /* Destructive/Expense - Red */
-    --destructive: 0 84% 60%;
+    /* Destructive/Expense - Modern Red */
+    --destructive: 348 83% 47%;
     --destructive-foreground: 0 0% 100%;
-    --destructive-light: 0 100% 95%;
+    --destructive-light: 348 83% 94%;
+    --destructive-glow: 348 83% 77%;
 
-    /* Neutral tones */
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
-    --accent: 240 5% 96%;
-    --accent-foreground: 224 20% 12%;
+    /* Rich Neutral tones */
+    --muted: 225 12% 94%;
+    --muted-foreground: 225 8% 42%;
+    --accent: 225 12% 94%;
+    --accent-foreground: 225 25% 8%;
 
-    /* Borders and inputs */
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 238 84% 58%;
+    /* Refined borders and inputs */
+    --border: 225 15% 88%;
+    --input: 225 15% 88%;
+    --ring: 235 89% 64%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
-    /* Gradients for visual appeal */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-dark)) 100%);
-    --gradient-success: linear-gradient(135deg, hsl(var(--success)) 0%, hsl(160 84% 30%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(240 100% 99%) 100%);
+    /* Rich gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(255 89% 54%) 50%, hsl(var(--primary-dark)) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(var(--success)) 0%, hsl(156 73% 32%) 100%);
+    --gradient-warning: linear-gradient(135deg, hsl(var(--warning)) 0%, hsl(25 95% 38%) 100%);
+    --gradient-destructive: linear-gradient(135deg, hsl(var(--destructive)) 0%, hsl(355 83% 42%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(225 30% 99%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(235 89% 64% / 0.1) 0%, hsl(245 20% 96% / 0.3) 100%);
+    --gradient-glass: linear-gradient(135deg, hsl(225 30% 100% / 0.8) 0%, hsl(225 30% 96% / 0.6) 100%);
     
-    /* Shadows for depth */
-    --shadow-card: 0 1px 3px 0 hsl(var(--primary) / 0.1), 0 1px 2px -1px hsl(var(--primary) / 0.1);
-    --shadow-elevated: 0 10px 15px -3px hsl(var(--primary) / 0.1), 0 4px 6px -4px hsl(var(--primary) / 0.1);
+    /* Rich shadows with color tints */
+    --shadow-card: 0 4px 6px -1px hsl(235 89% 64% / 0.1), 0 2px 4px -2px hsl(235 89% 64% / 0.1);
+    --shadow-elevated: 0 20px 25px -5px hsl(235 89% 64% / 0.15), 0 8px 10px -6px hsl(235 89% 64% / 0.1);
+    --shadow-glow: 0 0 32px hsl(var(--primary-glow) / 0.35);
+    --shadow-success: 0 4px 6px -1px hsl(142 76% 36% / 0.15), 0 2px 4px -2px hsl(142 76% 36% / 0.1);
+    --shadow-destructive: 0 4px 6px -1px hsl(348 83% 47% / 0.15), 0 2px 4px -2px hsl(348 83% 47% / 0.1);
     
-    /* Animation values */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    /* Smooth animations */
+    --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-spring: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
     --sidebar-background: 0 0% 98%;
 
@@ -87,33 +100,52 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 225 25% 6%;
+    --foreground: 225 15% 95%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 225 25% 8%;
+    --card-foreground: 225 15% 95%;
+    --card-glass: 225 25% 8% / 0.8;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 225 25% 8%;
+    --popover-foreground: 225 15% 95%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 235 89% 74%;
+    --primary-foreground: 225 25% 6%;
+    --primary-glow: 235 89% 54%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 225 20% 14%;
+    --secondary-foreground: 235 89% 74%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --success: 142 76% 46%;
+    --success-glow: 142 76% 36%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --warning: 32 95% 54%;
+    --warning-glow: 32 95% 44%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 348 83% 57%;
+    --destructive-glow: 348 83% 47%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --muted: 225 20% 14%;
+    --muted-foreground: 225 10% 65%;
+
+    --accent: 225 20% 14%;
+    --accent-foreground: 225 15% 95%;
+
+    --border: 225 20% 18%;
+    --input: 225 20% 18%;
+    --ring: 235 89% 74%;
+
+    /* Dark mode gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(255 89% 64%) 50%, hsl(235 89% 84%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(225 25% 8%) 0%, hsl(225 20% 12%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(235 89% 74% / 0.1) 0%, hsl(225 20% 14% / 0.3) 100%);
+    --gradient-glass: linear-gradient(135deg, hsl(225 25% 8% / 0.8) 0%, hsl(225 20% 12% / 0.6) 100%);
+
+    /* Dark mode shadows */
+    --shadow-card: 0 4px 6px -1px hsl(0 0% 0% / 0.3), 0 2px 4px -2px hsl(0 0% 0% / 0.2);
+    --shadow-elevated: 0 20px 25px -5px hsl(0 0% 0% / 0.4), 0 8px 10px -6px hsl(0 0% 0% / 0.3);
+    --shadow-glow: 0 0 32px hsl(var(--primary-glow) / 0.25);
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -136,9 +168,25 @@
 }
 
 @layer components {
-  /* Custom component styles for MyFinancials */
+  /* Rich component styles for MyFinancials */
   .finance-card {
-    @apply bg-card rounded-xl shadow-[var(--shadow-card)] border border-border/50 transition-[var(--transition-smooth)] hover:shadow-[var(--shadow-elevated)];
+    @apply relative bg-card rounded-2xl shadow-[var(--shadow-card)] border border-border/30 transition-[var(--transition-smooth)] hover:shadow-[var(--shadow-elevated)] hover:scale-[1.02] backdrop-blur-xl;
+    background: var(--gradient-card);
+  }
+
+  .finance-card-glass {
+    @apply relative rounded-2xl border border-border/20 backdrop-blur-xl transition-[var(--transition-smooth)] hover:shadow-[var(--shadow-elevated)] hover:scale-[1.02];
+    background: var(--gradient-glass);
+  }
+
+  .finance-card::before {
+    content: '';
+    @apply absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-300;
+    background: var(--gradient-hero);
+  }
+
+  .finance-card:hover::before {
+    @apply opacity-100;
   }
   
   .gradient-primary {
@@ -148,20 +196,109 @@
   .gradient-success {
     background: var(--gradient-success);
   }
+
+  .gradient-warning {
+    background: var(--gradient-warning);
+  }
+
+  .gradient-destructive {
+    background: var(--gradient-destructive);
+  }
   
   .gradient-card {
     background: var(--gradient-card);
   }
+
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .gradient-glass {
+    background: var(--gradient-glass);
+  }
   
   .metric-positive {
-    @apply text-success;
+    @apply text-success font-semibold;
   }
   
   .metric-negative {
-    @apply text-destructive;
+    @apply text-destructive font-semibold;
   }
   
   .metric-neutral {
     @apply text-muted-foreground;
+  }
+
+  .icon-glow {
+    @apply transition-all duration-300;
+    filter: drop-shadow(0 0 8px hsl(var(--primary-glow) / 0.4));
+  }
+
+  .icon-glow:hover {
+    filter: drop-shadow(0 0 12px hsl(var(--primary-glow) / 0.6));
+  }
+
+  .text-glow {
+    text-shadow: 0 0 20px hsl(var(--primary-glow) / 0.3);
+  }
+
+  .mobile-safe {
+    @apply pb-20 md:pb-6;
+  }
+
+  .mobile-card {
+    @apply p-4 sm:p-6;
+  }
+
+  .mobile-text {
+    @apply text-sm sm:text-base;
+  }
+
+  .mobile-spacing {
+    @apply space-y-3 sm:space-y-4;
+  }
+
+  /* Improved animations */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      filter: drop-shadow(0 0 8px hsl(var(--primary-glow) / 0.3));
+    }
+    50% {
+      filter: drop-shadow(0 0 16px hsl(var(--primary-glow) / 0.6));
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+  }
+
+  .animate-slide-in-right {
+    animation: slideInRight 0.5s ease-out;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
   }
 }

@@ -16,25 +16,25 @@ const quickActions = [
     name: "Add Transaction", 
     icon: Receipt, 
     action: "transaction",
-    color: "bg-primary"
+    color: "gradient-primary"
   },
   { 
     name: "Scan Receipt", 
     icon: Camera, 
     action: "camera",
-    color: "bg-accent"
+    color: "gradient-destructive"
   },
   { 
     name: "Create Budget", 
     icon: PiggyBank, 
     action: "budget",
-    color: "bg-success"
+    color: "gradient-success"
   },
   { 
     name: "Set Goal", 
     icon: Target, 
     action: "goal",
-    color: "bg-warning"
+    color: "gradient-warning"
   },
 ];
 
@@ -84,28 +84,28 @@ export function FloatingActionButton({ onAddTransaction, onAddAccount, onScanRec
             return (
               <div
                 key={item.name}
-                className="flex items-center gap-3 animate-in slide-in-from-bottom-4 duration-200"
-                style={{ animationDelay: `${index * 50}ms` }}
+                className="flex items-center gap-4 animate-fade-in-up"
+                style={{ animationDelay: `${index * 100}ms` }}
               >
-                <span className="text-xs font-medium bg-card/90 backdrop-blur-sm px-3 py-2 rounded-full border border-border/50 text-foreground whitespace-nowrap">
+                <span className="text-sm font-semibold finance-card-glass px-4 py-2 rounded-2xl border border-border/20 text-foreground whitespace-nowrap shadow-md">
                   {item.name}
                 </span>
                 <Button
                   size="sm"
                   className={cn(
-                    "w-12 h-12 rounded-full shadow-lg",
+                    "w-14 h-14 rounded-3xl shadow-[var(--shadow-elevated)] border-2 border-white/20",
                     item.color,
-                    "text-white hover:scale-110 transition-transform duration-200"
+                    "text-white hover:scale-110 transition-all duration-300 icon-glow backdrop-blur-xl"
                   )}
                   onClick={() => {
                     // Add haptic feedback for mobile
                     if (typeof window !== 'undefined' && 'navigator' in window && 'vibrate' in navigator) {
-                      navigator.vibrate(50);
+                      navigator.vibrate(75);
                     }
                     handleActionClick(item.action);
                   }}
                 >
-                  <IconComponent className="h-5 w-5" />
+                  <IconComponent className="h-6 w-6" />
                 </Button>
               </div>
             );
@@ -117,9 +117,10 @@ export function FloatingActionButton({ onAddTransaction, onAddAccount, onScanRec
       <Button
         size="lg"
         className={cn(
-          "w-14 h-14 rounded-full shadow-xl gradient-primary",
-          "text-white hover:scale-110 transition-all duration-200",
-          isExpanded && "rotate-45"
+          "w-16 h-16 rounded-3xl shadow-[var(--shadow-glow)] gradient-primary animate-float",
+          "text-white hover:scale-110 transition-all duration-300 border-4 border-white/20",
+          "icon-glow backdrop-blur-xl",
+          isExpanded && "rotate-45 scale-110"
         )}
         onClick={() => setIsExpanded(!isExpanded)}
       >
