@@ -68,22 +68,7 @@ const Dashboard = () => {
       <div className="px-4 py-6 mobile-spacing sm:px-6">
 
         {/* Enhanced Metrics Cards Grid */}
-        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-          <div className="finance-card mobile-card animate-fade-in-up sm:col-span-2 xl:col-span-2">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 rounded-2xl gradient-primary flex items-center justify-center icon-glow">
-                <DollarSign className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h3 className="font-bold text-foreground text-lg">Net Worth</h3>
-                <p className="text-xs text-muted-foreground">Total assets minus liabilities</p>
-              </div>
-            </div>
-            <p className={`text-3xl font-bold mb-2 ${netWorth >= 0 ? 'metric-positive' : 'metric-negative'} text-glow`}>
-              {netWorth >= 0 ? formatCurrency(netWorth) : `-${formatCurrency(Math.abs(netWorth))}`}
-            </p>
-            <p className="mobile-text text-muted-foreground">{netWorth > 0 ? "Your financial position is strong" : "Start tracking to improve your finances"}</p>
-          </div>
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
           
           <div className="finance-card mobile-card animate-fade-in-up [animation-delay:100ms]">
             <div className="flex items-center gap-3 mb-3">
